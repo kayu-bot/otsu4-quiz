@@ -28,10 +28,15 @@ h3 { margin: 28px 0 10px; font-size: 16px; }
 .dojo-menu b { color: #875700 !important; }
 .quantity-menu { border-color: #8db5de !important; background: #f2f8ff !important; }
 .quantity-menu b { color: #1f5d9a !important; }
+.substance-menu { border-color: #b49ad1 !important; background: #faf5ff !important; }
+.substance-menu b { color: #69438a !important; }
 .menu-intro { margin: -8px 0 18px; color: #64748b; font-size: 14px; line-height: 1.6; }
 .quantity-mode-menu button:first-child b { color: #1f5d9a; }
 .quantity-mode-menu button:nth-child(2) b { color: #7b4f0b; }
 .quantity-mode-menu button:nth-child(3) b { color: #6d3b84; }
+.substance-mode-menu button:first-child b { color: #1f5d9a; }
+.substance-mode-menu button:nth-child(2) b { color: #08775f; }
+.substance-mode-menu button:nth-child(3) b { color: #69438a; }
 .note { margin-top: 26px; color: #718096; font-size: 13px; text-align: center; }
 
 .back, .quit { border: 0; background: transparent; color: #52706a; font-size: 14px; }
@@ -53,6 +58,7 @@ h3 { margin: 28px 0 10px; font-size: 16px; }
 .explanation-toggle em { flex: 0 0 27px; color: #08775f; font-size: 12px; font-style: normal; text-align: right; }
 
 .choices { gap: 11px; }
+.choices.two-choice button { min-height: 88px; }
 .choices button { display: flex; align-items: flex-start; gap: 12px; min-height: 66px; padding: 15px 14px; text-align: left; font-size: 16px; line-height: 1.55; overflow-wrap: anywhere; }
 .choices strong { display: grid; flex: 0 0 26px; width: 26px; height: 26px; place-items: center; border-radius: 50%; background: #edf3f1; color: #31645a; font-size: 14px; }
 .choices .correct { border-color: #20a574; background: #e7f8ef; color: #075c42; }
@@ -71,6 +77,7 @@ h3 { margin: 28px 0 10px; font-size: 16px; }
 .score p { margin: 0; font-size: 14px; }.score h2 { margin: 5px 0; font-size: clamp(34px, 11vw, 42px); }.score small { font-size: 16px; font-weight: 500; }.score.perfect { background: #fff4cf; color: #855000; }.score.perfect h2 { font-size: clamp(25px, 7vw, 28px); }
 .stats { gap: 8px; }.stats div { display: flex; justify-content: space-between; gap: 12px; min-width: 0; padding: 13px; border-radius: 10px; background: white; font-size: 15px; }.stats span, .stats b { overflow-wrap: anywhere; }
 .wrong { gap: 9px; }.wrong article { min-width: 0; padding: 12px; overflow-wrap: anywhere; border-left: 4px solid #ed7777; border-radius: 8px; background: white; }.wrong p { margin: 8px 0; font-size: 15px; line-height: 1.55; }.wrong small { color: #53706a; font-size: 13px; line-height: 1.55; overflow-wrap: anywhere; }
+.mistake-summary { margin: 14px 0 0; padding: 12px; border-radius: 10px; background: #f3f6f5; color: #40534f; font-size: 14px; line-height: 1.7; }
 .actions { margin-top: 28px; }.actions button { min-height: 52px; padding: 12px 16px; text-align: center; }.actions .back { border: 0; box-shadow: none; background: transparent; }
 
 @media (min-width: 768px) {
@@ -78,6 +85,7 @@ h3 { margin: 28px 0 10px; font-size: 16px; }
   .menu { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .menu .dojo-menu { grid-column: span 2; }
   .menu .quantity-menu { grid-column: span 2; }
+  .menu .substance-menu { grid-column: span 2; }
   .actions { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .actions .next { grid-column: span 2; }
 }
