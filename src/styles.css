@@ -1,4 +1,75 @@
-:root { font-family: system-ui, -apple-system, "Noto Sans JP", sans-serif; color: #1f2937; background: #f5f7f6; font-synthesis: none; }
-.explanation-toggle { display: flex; align-items: center; gap: 8px; width: 100%; margin: 16px 0; padding: 10px 12px; border: 1px solid #dce4e1; border-radius: 12px; background: #fff; color: #40534f; font-size: 14px; font-weight: 700; }.explanation-toggle i { position: relative; display: block; width: 42px; height: 24px; margin-left: auto; border-radius: 99px; background: #b7c5c1; transition: background .15s; }.explanation-toggle i.on { background: #08775f; }.explanation-toggle i b { position: absolute; top: 3px; left: 3px; width: 18px; height: 18px; border-radius: 50%; background: #fff; transition: transform .15s; }.explanation-toggle i.on b { transform: translateX(18px); }.explanation-toggle em { width: 27px; color: #08775f; font-size: 12px; font-style: normal; text-align: right; }.feedback .answer-line { margin-bottom: 4px; font-weight: 800; color: inherit; }
-.dojo-menu { border-color: #e8c96a !important; background: #fffaf0 !important; }.dojo-menu b { color: #875700 !important; }.dojo .question em { color: #aa6900; font-style: normal; font-size: 1.25em; }.feedback .range { font-weight: 800; color: inherit; }.score.perfect { background: #fff4cf; color: #855000; }.score.perfect h2 { font-size: 28px; }
-* { box-sizing: border-box; } body { margin: 0; } button { font: inherit; cursor: pointer; } .app { width: min(100%, 680px); min-height: 100dvh; margin: auto; padding: 22px 18px 42px; } header { display: flex; align-items: center; gap: 12px; margin-bottom: 34px; } header h1 { font-size: 19px; margin: 0; } header p { color: #64748b; font-size: 13px; margin: 3px 0 0; } .badge { display: grid; place-items: center; width: 43px; height: 43px; border-radius: 12px; background: #117a65; color: white; font-weight: 800; } h2 { font-size: 22px; line-height: 1.55; margin: 0 0 18px; } h3 { font-size: 15px; margin: 28px 0 10px; } .menu { display: grid; gap: 12px; } .menu button, .choices button, .actions button { text-align: left; border: 1px solid #dce4e1; border-radius: 14px; background: white; color: #1f2937; min-height: 76px; padding: 15px 17px; box-shadow: 0 1px 2px #16251b0a; } .menu button:active, .choices button:active { transform: scale(.99); } .menu b { display: block; color: #095d4d; font-size: 17px; margin-bottom: 5px; } .menu span { color: #64748b; font-size: 13px; } .note { color: #718096; font-size: 12px; text-align: center; margin-top: 26px; } .back, .quit { border: 0; background: transparent; color: #52706a; padding: 8px 0; font-size: 14px; } .progress { display: flex; justify-content: space-between; color: #53635f; font-size: 13px; font-weight: 700; } .bar { height: 6px; border-radius: 99px; background: #dce9e5; margin: 10px 0 25px; overflow: hidden; } .bar i { display: block; height: 100%; background: #18a17e; border-radius: 99px; } .meta { display: flex; gap: 8px; margin-bottom: 11px; } .meta span, .wrong span { font-size: 12px; color: #16735f; background: #e1f3ed; border-radius: 99px; padding: 4px 8px; } .question { min-height: 88px; } .choices { display: grid; gap: 10px; } .choices button { display: flex; align-items: flex-start; gap: 13px; line-height: 1.5; min-height: 64px; } .choices strong { display: grid; place-items: center; flex: 0 0 25px; height: 25px; border-radius: 50%; color: #31645a; background: #edf3f1; font-size: 13px; } .choices .correct { border-color: #20a574; background: #e7f8ef; color: #075c42; } .choices .incorrect { border-color: #e46767; background: #fff0f0; color: #a83737; } .choices .muted { opacity: .52; } .feedback { margin-top: 20px; border-radius: 14px; padding: 17px; } .feedback.yes { background: #e7f8ef; color: #075c42; } .feedback.no { background: #fff0f0; color: #8d2929; } .feedback p { color: #344752; font-size: 14px; line-height: 1.7; margin: 10px 0 15px; } .next { display: block; width: 100%; text-align: center !important; min-height: 52px !important; border: 0 !important; border-radius: 12px !important; background: #08775f !important; color: white !important; font-weight: 800; } .quit { display: block; margin: 24px auto 0; }.score { text-align: center; background: #e6f5ef; padding: 24px; border-radius: 16px; color: #075c42; }.score p { margin: 0; font-size: 13px; }.score h2 { margin: 5px 0; font-size: 42px; }.score small { font-size: 16px; font-weight: 500; }.stats { display: grid; gap: 8px; }.stats div { display: flex; justify-content: space-between; padding: 13px; background: white; border-radius: 10px; font-size: 14px; }.wrong { display: grid; gap: 9px; }.wrong article { background: white; border-left: 4px solid #ed7777; border-radius: 8px; padding: 12px; }.wrong p { margin: 8px 0; font-size: 14px; line-height: 1.5; }.wrong small { color: #53706a; font-size: 12px; }.actions { display: grid; gap: 10px; margin-top: 28px; }.actions button:not(.next) { min-height: 52px; text-align: center; } .actions .back { border: 0; box-shadow: none; background: transparent; }
+:root {
+  font-family: system-ui, -apple-system, "Noto Sans JP", sans-serif;
+  color: #1f2937;
+  background: #f5f7f6;
+  font-synthesis: none;
+}
+
+* { box-sizing: border-box; }
+html, body, #root { min-width: 0; min-height: 100%; }
+body { margin: 0; overflow-x: hidden; }
+button { font: inherit; cursor: pointer; }
+
+.app { width: 100%; min-height: 100dvh; margin: 0 auto; padding: 18px 14px 36px; overflow-wrap: anywhere; }
+header { display: flex; align-items: center; gap: 12px; margin-bottom: 28px; }
+header h1 { margin: 0; font-size: 19px; }
+header p { margin: 3px 0 0; color: #64748b; font-size: 13px; }
+.badge { display: grid; flex: 0 0 43px; width: 43px; height: 43px; place-items: center; border-radius: 12px; background: #117a65; color: white; font-weight: 800; }
+h2 { margin: 0 0 18px; font-size: clamp(20px, 6vw, 24px); line-height: 1.55; overflow-wrap: anywhere; }
+h3 { margin: 28px 0 10px; font-size: 16px; }
+
+.menu, .choices, .actions, .stats, .wrong { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; }
+.menu button, .choices button, .actions button { width: 100%; min-width: 0; border: 1px solid #dce4e1; border-radius: 14px; background: white; color: #1f2937; box-shadow: 0 1px 2px #16251b0a; }
+.menu button { min-height: 76px; padding: 15px 16px; text-align: left; }
+.menu button:active, .choices button:active { transform: scale(.99); }
+.menu b { display: block; margin-bottom: 5px; color: #095d4d; font-size: 17px; }
+.menu span { display: block; color: #64748b; font-size: 14px; line-height: 1.5; overflow-wrap: anywhere; }
+.dojo-menu { border-color: #e8c96a !important; background: #fffaf0 !important; }
+.dojo-menu b { color: #875700 !important; }
+.note { margin-top: 26px; color: #718096; font-size: 13px; text-align: center; }
+
+.back, .quit { border: 0; background: transparent; color: #52706a; font-size: 14px; }
+.back { padding: 8px 0; }
+.quit { display: block; margin: 24px auto 0; padding: 8px; }
+.progress { display: flex; justify-content: space-between; gap: 12px; color: #53635f; font-size: 14px; font-weight: 700; }
+.bar { height: 6px; margin: 10px 0 18px; overflow: hidden; border-radius: 99px; background: #dce9e5; }
+.bar i { display: block; height: 100%; border-radius: inherit; background: #18a17e; }
+.meta { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 11px; }
+.meta span, .wrong span { max-width: 100%; padding: 4px 8px; overflow-wrap: anywhere; border-radius: 99px; background: #e1f3ed; color: #16735f; font-size: 12px; }
+.question { min-height: 0; margin-top: 20px; font-size: clamp(20px, 6vw, 24px); }
+.dojo .question em { color: #aa6900; font-size: 1.2em; font-style: normal; }
+
+.explanation-toggle { display: flex; align-items: center; width: 100%; min-width: 0; gap: 8px; margin: 12px 0; padding: 10px 12px; border: 1px solid #dce4e1; border-radius: 12px; background: #fff; color: #40534f; font-size: 14px; font-weight: 700; }
+.explanation-toggle i { position: relative; display: block; flex: 0 0 42px; width: 42px; height: 24px; margin-left: auto; border-radius: 99px; background: #b7c5c1; transition: background .15s; }
+.explanation-toggle i.on { background: #08775f; }
+.explanation-toggle i b { position: absolute; top: 3px; left: 3px; width: 18px; height: 18px; border-radius: 50%; background: #fff; transition: transform .15s; }
+.explanation-toggle i.on b { transform: translateX(18px); }
+.explanation-toggle em { flex: 0 0 27px; color: #08775f; font-size: 12px; font-style: normal; text-align: right; }
+
+.choices { gap: 11px; }
+.choices button { display: flex; align-items: flex-start; gap: 12px; min-height: 66px; padding: 15px 14px; text-align: left; font-size: 16px; line-height: 1.55; overflow-wrap: anywhere; }
+.choices strong { display: grid; flex: 0 0 26px; width: 26px; height: 26px; place-items: center; border-radius: 50%; background: #edf3f1; color: #31645a; font-size: 14px; }
+.choices .correct { border-color: #20a574; background: #e7f8ef; color: #075c42; }
+.choices .incorrect { border-color: #e46767; background: #fff0f0; color: #a83737; }
+.choices .muted { opacity: .52; }
+
+.feedback { margin-top: 20px; padding: 16px; border-radius: 14px; overflow-wrap: anywhere; }
+.feedback.yes { background: #e7f8ef; color: #075c42; }
+.feedback.no { background: #fff0f0; color: #8d2929; }
+.feedback p { margin: 10px 0 15px; color: #344752; font-size: 16px; line-height: 1.7; overflow-wrap: anywhere; word-break: break-word; }
+.feedback .answer-line, .feedback .range { margin-bottom: 4px; color: inherit; font-weight: 800; }
+.next { display: block; width: 100%; min-height: 52px; padding: 12px 16px; border: 0; border-radius: 12px; background: #08775f; color: white; font-weight: 800; text-align: center !important; }
+
+.score { padding: 22px 16px; border-radius: 16px; background: #e6f5ef; color: #075c42; text-align: center; overflow-wrap: anywhere; }
+.score p { margin: 0; font-size: 14px; }.score h2 { margin: 5px 0; font-size: clamp(34px, 11vw, 42px); }.score small { font-size: 16px; font-weight: 500; }.score.perfect { background: #fff4cf; color: #855000; }.score.perfect h2 { font-size: clamp(25px, 7vw, 28px); }
+.stats { gap: 8px; }.stats div { display: flex; justify-content: space-between; gap: 12px; min-width: 0; padding: 13px; border-radius: 10px; background: white; font-size: 15px; }.stats span, .stats b { overflow-wrap: anywhere; }
+.wrong { gap: 9px; }.wrong article { min-width: 0; padding: 12px; overflow-wrap: anywhere; border-left: 4px solid #ed7777; border-radius: 8px; background: white; }.wrong p { margin: 8px 0; font-size: 15px; line-height: 1.55; }.wrong small { color: #53706a; font-size: 13px; line-height: 1.55; overflow-wrap: anywhere; }
+.actions { margin-top: 28px; }.actions button { min-height: 52px; padding: 12px 16px; text-align: center; }.actions .back { border: 0; box-shadow: none; background: transparent; }
+
+@media (min-width: 768px) {
+  .app { max-width: 720px; padding: 32px 28px 52px; }
+  .menu { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .menu .dojo-menu { grid-column: span 2; }
+  .actions { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .actions .next { grid-column: span 2; }
+}
