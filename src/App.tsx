@@ -6,9 +6,10 @@ import { createSubstanceClassificationSet, type SubstanceMode, type SubstanceQue
 import { createFunctionalGroupSet, type FunctionalGroupQuestion } from './data/functionalGroupDojo'
 import type { Category, History, Question } from './types'
 
-type Screen = 'home' | 'category' | 'quiz' | 'result' | 'flash-options' | 'dojo' | 'dojo-result' | 'quantity-menu' | 'quantity' | 'quantity-result' | 'substance-menu' | 'substance' | 'substance-result' | 'functional-options' | 'functional' | 'functional-result'
+type Screen = 'home' | 'normal-options' | 'category' | 'category-options' | 'quiz' | 'result' | 'flash-options' | 'dojo' | 'dojo-result' | 'quantity-menu' | 'quantity' | 'quantity-result' | 'substance-menu' | 'substance' | 'substance-result' | 'functional-options' | 'functional' | 'functional-result'
 type Mode = 'ten' | 'random' | 'mistakes' | 'category'
 type SetSize = 10 | 20 | 30
+type NormalSize = 10 | 20 | 35 | 50 | 'all'
 type Answer = { question: Question; selected: number; correct: boolean }
 type DojoAnswer = { question: FlashPointQuestion; selected: number; correct: boolean }
 type QuantityAnswer = { question: QuantityQuestion; selected: number; correct: boolean }
@@ -49,17 +50,18 @@ export default function App() {
   const [functionalSelected, setFunctionalSelected] = useState<number | null>(null)
   const [functionalAnswers, setFunctionalAnswers] = useState<FunctionalAnswer[]>([])
   const [setSize, setSetSize] = useState<SetSize>(10)
+  const [normalSize, setNormalSize] = useState<NormalSize>(10)
   const [showExplanation, setShowExplanation] = useState(readShowExplanation)
 
   const current = quiz[index]
-  const start = (nextMode: Mode, category?: Category) => {
+  const start = (nextMode: Mode, category?: Category, requestedSize: NormalSize = 10) => {
     let pool = category ? questions.filter((q) => q.category === category) : [...questions]
     if (nextMode === 'mistakes') {
       const experienced = pool.filter((q) => history[q.id] && history[q.id].incorrect > 0)
       if (experienced.length === 0) { window.alert('まだ間違えた問題がありません。まず通常のクイズに挑戦してみましょう。'); return }
       pool = experienced
     }
-    const count = nextMode === 'ten' ? Math.min(10, pool.length) : pool.length
+    const count = requestedSize === 'all' ? pool.length : Math.min(requestedSize, pool.length)
     setQuiz(shuffle(pool).slice(0, count)); setMode(nextMode); setCategoryScope(category); setIndex(0); setSelected(null); setAnswers([]); setScreen('quiz')
   }
   const answer = (choice: number) => {
@@ -114,18 +116,20 @@ export default function App() {
 
   return <main className="app"><header><span className="badge">乙4</span><div><h1>危険物取扱者 クイズ</h1><p>短時間で、確実に復習。</p></div></header>
     {screen === 'home' && <section className="home"><h2>今日の学習を選ぶ</h2><div className="menu">
-      <button onClick={() => start('ten')}><b>10問クイズ</b><span>まずは短く腕試し</span></button>
+      <button onClick={() => { setNormalSize(10); setScreen('normal-options') }}><b>通常テスト</b><span>10・20・35・50問から選択</span></button>
       <button onClick={() => setScreen('category')}><b>分野別</b><span>苦手な分野を重点復習</span></button>
-      <button onClick={() => start('mistakes')}><b>間違えた問題</b><span>不正解だった問題を優先</span></button>
-      <button onClick={() => start('random')}><b>全問題からランダム</b><span>全{questions.length}問をランダム出題</span></button>
+      <button onClick={() => start('mistakes', undefined, normalSize)}><b>間違えた問題</b><span>不正解だった問題を優先</span></button>
+      <button onClick={() => start('random', undefined, 'all')}><b>全問題からランダム</b><span>全{questions.length}問をランダム出題</span></button>
       <button className="dojo-menu" onClick={() => setScreen('flash-options')}><b>引火点道場</b><span>石油類の区分を反復特訓</span></button>
       <button className="quantity-menu" onClick={() => setScreen('quantity-menu')}><b>指定数量道場</b><span>指定数量の暗記と倍数計算を特訓</span></button>
       <button className="substance-menu" onClick={() => setScreen('substance-menu')}><b>物質分類道場</b><span>石油類と水溶性を代表物質から判定</span></button>
       <button className="functional-menu" onClick={() => setScreen('functional-options')}><b>官能基道場</b><span>物質名と官能基を5肢択一で反復</span></button>
     </div><ExplanationToggle enabled={showExplanation} onToggle={toggleExplanation} /><p className="note">回答履歴はこの端末内に保存されます。</p></section>}
-    {screen === 'category' && <section><button className="back" onClick={() => setScreen('home')}>← トップへ戻る</button><h2>分野を選ぶ</h2><div className="menu">{categories.map((category) => <button key={category} onClick={() => start('category', category)}><b>{category}</b><span>{questions.filter((q) => q.category === category).length}問からランダム出題</span></button>)}</div></section>}
+    {screen === 'normal-options' && <NormalTestMenu size={normalSize} onSizeChange={setNormalSize} onBack={() => setScreen('home')} onStart={() => start('random', undefined, normalSize)} />}
+    {screen === 'category' && <section><button className="back" onClick={() => setScreen('home')}>← トップへ戻る</button><h2>分野を選ぶ</h2><div className="menu">{categories.map((category) => <button key={category} onClick={() => { setCategoryScope(category); setNormalSize(10); setScreen('category-options') }}><b>{category}</b><span>{questions.filter((q) => q.category === category).length}問から出題</span></button>)}</div></section>}
+    {screen === 'category-options' && categoryScope && <CategoryTestMenu category={categoryScope} available={questions.filter((q) => q.category === categoryScope).length} size={normalSize === 35 || normalSize === 50 ? 10 : normalSize} onSizeChange={setNormalSize} onBack={() => setScreen('category')} onStart={() => start('category', categoryScope, normalSize)} />}
     {screen === 'quiz' && current && <Quiz question={current} index={index} total={quiz.length} selected={selected} showExplanation={showExplanation} onToggleExplanation={toggleExplanation} onAnswer={answer} onNext={next} onQuit={() => setScreen('home')} />}
-    {screen === 'result' && <Results answers={answers} mode={mode} onHome={() => setScreen('home')} onRetry={() => start(mode, categoryScope)} onMistakes={() => start('mistakes')} />}
+    {screen === 'result' && <Results answers={answers} mode={mode} onHome={() => setScreen('home')} onRetry={() => start(mode, categoryScope, quiz.length as NormalSize)} onMistakes={() => start('mistakes', undefined, normalSize)} />}
     {screen === 'dojo' && dojoQuiz[dojoIndex] && <DojoQuiz question={dojoQuiz[dojoIndex]} index={dojoIndex} total={dojoQuiz.length} selected={dojoSelected} showExplanation={showExplanation} onToggleExplanation={toggleExplanation} onAnswer={answerDojo} onNext={nextDojo} onQuit={() => setScreen('home')} />}
     {screen === 'flash-options' && <SetLengthMenu title="引火点道場" description="石油類の引火点区分を反復します。" size={setSize} onSizeChange={setSetSize} onBack={() => setScreen('home')} onStart={() => startDojo(setSize)} />}
     {screen === 'dojo-result' && <DojoResults answers={dojoAnswers} onHome={() => setScreen('home')} onRetry={() => startDojo(dojoQuiz.length as SetSize)} />}
@@ -147,6 +151,16 @@ function ExplanationToggle({ enabled, onToggle }: { enabled: boolean; onToggle: 
 
 function SetLengthPicker({ size, onSizeChange }: { size: SetSize; onSizeChange: (size: SetSize) => void }) {
   return <div className="set-length-picker"><span>問題数</span><div>{([10, 20, 30] as SetSize[]).map((value) => <button key={value} className={size === value ? 'selected' : ''} onClick={() => onSizeChange(value)}>{value}問</button>)}</div></div>
+}
+
+function NormalTestMenu({ size, onSizeChange, onBack, onStart }: { size: NormalSize; onSizeChange: (size: NormalSize) => void; onBack: () => void; onStart: () => void }) {
+  const options: NormalSize[] = [10, 20, 35, 50]
+  return <section><button className="back" onClick={onBack}>← トップへ戻る</button><h2>通常テスト</h2><p className="menu-intro">5肢択一で、全{questions.length}問からランダムに出題します。</p><div className="set-length-picker normal-length-picker"><span>問題数</span><div>{options.map((value) => <button key={value} className={size === value ? 'selected' : ''} onClick={() => onSizeChange(value)}>{value}問</button>)}</div></div><button className="next start-dojo" onClick={onStart}>{size}問で始める</button></section>
+}
+
+function CategoryTestMenu({ category, available, size, onSizeChange, onBack, onStart }: { category: Category; available: number; size: 10 | 20 | 'all'; onSizeChange: (size: NormalSize) => void; onBack: () => void; onStart: () => void }) {
+  const options: (10 | 20 | 'all')[] = [10, 20, 'all']
+  return <section><button className="back" onClick={onBack}>← 分野を選ぶ</button><h2>{category}</h2><p className="menu-intro">全{available}問から5肢択一で出題します。</p><div className="set-length-picker normal-length-picker"><span>問題数</span><div>{options.map((value) => <button key={value} className={size === value ? 'selected' : ''} onClick={() => onSizeChange(value)}>{value === 'all' ? '全問' : `${value}問`}</button>)}</div></div><button className="next start-dojo" onClick={onStart}>{size === 'all' ? '全問で始める' : `${size}問で始める`}</button></section>
 }
 
 function SetLengthMenu({ title, description, size, onSizeChange, onBack, onStart }: { title: string; description: string; size: SetSize; onSizeChange: (size: SetSize) => void; onBack: () => void; onStart: () => void }) {

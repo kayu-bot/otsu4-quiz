@@ -5,7 +5,7 @@ export interface Question {
   category: Category
   subcategory: string
   question: string
-  choices: [string, string, string, string]
+  choices: string[]
   correctIndex: number
   explanation: string
   tags: string[]

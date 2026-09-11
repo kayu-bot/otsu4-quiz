@@ -1,7 +1,8 @@
 import type { Question } from '../types'
+import { additionalQuestions } from './additionalQuestions'
 
 // 問題を追加する場合は、この配列に Question 形式のオブジェクトを1件追加します。
-export const questions: Question[] = [
+const baseQuestions: Question[] = [
   { id: 'law-01', category: '法令', subcategory: '危険物の定義', question: '消防法上の危険物とは、どのような物品を指すか。', choices: ['火災が起きた物品すべて', '別表第一で定める、火災の発生・拡大のおそれが大きい物品', '可燃性の液体だけ', '毒性を持つ化学物質すべて'], correctIndex: 1, explanation: '危険物は、消防法の別表第一で品名・性質などが定められた物品です。', tags: ['危険物', '定義'], difficulty: 1 },
   { id: 'law-02', category: '法令', subcategory: '第4類危険物', question: '第4類危険物に分類されるものはどれか。', choices: ['酸化性固体', '可燃性固体', '引火性液体', '自己反応性物質'], correctIndex: 2, explanation: '第4類は引火性液体です。蒸気に着火すると燃焼する性質があります。', tags: ['第4類', '分類'], difficulty: 1 },
   { id: 'law-03', category: '法令', subcategory: '指定数量', question: '危険物の「指定数量」として適切な説明はどれか。', choices: ['危険物を保管できる最大量', '危険性に応じて法令で定められた基準量', '1日に扱える量', '危険物取扱者が扱える量'], correctIndex: 1, explanation: '指定数量は、危険物の品名ごとに法令で定められた基準量です。規制の基準になります。', tags: ['指定数量'], difficulty: 1 },
@@ -53,3 +54,6 @@ export const questions: Question[] = [
   { id: 'day1-32', category: '性質消火', subcategory: 'キシレンの性状', question: 'キシレンについて正しいものはどれか。', choices: ['水に任意の割合で混ざる', '水にほとんど溶けず、溶剤として利用される', '第1石油類・水溶性である', '無臭である'], correctIndex: 1, explanation: 'キシレンは第2石油類・非水溶性で、水にほとんど溶けず溶剤として利用されます。', tags: ['キシレン', '性状'], difficulty: 2 },
   { id: 'day1-33', category: '性質消火', subcategory: 'グリセリンとアセトンの性状', question: 'アセトンについて正しいものはどれか。', choices: ['無臭で水に溶けない', '第2石油類・非水溶性である', '水と任意の割合で混ざり、引火点は20℃より低い', '特有の芳香をもつ粘稠な液体である'], correctIndex: 2, explanation: 'アセトンは第1石油類・水溶性で、特有のにおいがあり水と任意の割合で混ざります。粘稠で吸湿性があるのはグリセリンです。', tags: ['アセトン', '性状'], difficulty: 2 },
 ]
+
+// 旧4択問題は内容を変えず、5肢目を追加して通常テストを5肢択一に統一します。
+export const questions: Question[] = [...baseQuestions.map((question) => ({ ...question, choices: [...question.choices, '上記のいずれでもない'] })), ...additionalQuestions]
