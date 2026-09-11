@@ -44,15 +44,12 @@ const shuffle = <T,>(items: T[], rng: RandomSource) => {
 }
 const formatMultiple = (value: number) => `${Number(value.toFixed(2))}倍`
 
-function multipleChoices(answer: number, entries: CalculationEntry[], rng: RandomSource): string[] {
-  const totalAmount = entries.reduce((sum, entry) => sum + entry.item.quantity * entry.multiple, 0)
-  const firstOnly = entries[0].multiple
-  const denominatorMistake = entries.length > 1 ? entries.reduce((sum, entry) => sum + entry.item.quantity * entry.multiple, 0) / entries[0].item.quantity : entries[0].item.quantity
-  const candidates = [answer, firstOnly, denominatorMistake, totalAmount, answer + 0.5, Math.max(0.1, answer - 0.2)]
-    .map((value) => Math.round(value * 100) / 100)
-  const unique = [...new Set(candidates)].filter((value) => value >= 0)
-  while (unique.length < 4) unique.push(Math.round((answer + 0.3 + unique.length * 0.2) * 100) / 100)
-  return shuffle(unique.slice(0, 4), rng).map(formatMultiple)
+function multipleChoices(answer: number, rng: RandomSource): string[] {
+  // 0.01倍単位の整数で扱い、浮動小数点誤差を避けます。
+  // 全候補を正答の近傍に限定し、指定数量そのものを倍数の誤答に混ぜません。
+  const answerHundredths = Math.round(answer * 100)
+  const candidates = [-10, -5, 0, 5, 10].map((offset) => (answerHundredths + offset) / 100)
+  return shuffle(candidates, rng).map(formatMultiple)
 }
 
 function memoryQuestion(item: QuantityItem, useMaterial: boolean, rng: RandomSource): QuantityQuestion {
@@ -78,7 +75,7 @@ export function createDesignatedCalculationQuestion(templateIndex: number, rng: 
     ? `${quantities}を貯蔵している。指定数量の倍数はいくつ？`
     : `${quantities}を同一場所で貯蔵している。指定数量の倍数の合計はいくつ？`
   const explanation = `${entries.map((entry) => `${entry.material.name}${entry.item.quantity * entry.multiple}÷${entry.item.quantity}＝${formatMultiple(entry.multiple)}`).join('\n')}\n合計${answer}`
-  const choices = multipleChoices(answerValue, entries, rng)
+  const choices = multipleChoices(answerValue, rng)
   return { id: `calculation-template-${templateIndex}`, title, choices, correctIndex: choices.indexOf(answer), answer, explanation, wrongLabel: entries.map((entry) => entry.material.name).join('・') }
 }
 
