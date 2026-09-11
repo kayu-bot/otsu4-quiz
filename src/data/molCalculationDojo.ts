@@ -68,11 +68,15 @@ const typeCycle = (difficulty: MolDifficulty): MolQuestionType[] => difficulty =
 // セット開始時に数値を確定する純粋な生成関数です。再レンダリングでは値が変わりません。
 export function createMolCalculationSet(difficulty: MolDifficulty, size = 10, rng: RandomSource = Math.random): MolQuestion[] {
   const questions: MolQuestion[] = []
+  const usedCombinations = new Set<string>()
   while (questions.length < size) {
     for (const type of shuffle(typeCycle(difficulty), rng)) {
       if (questions.length >= size) break
-      const material = pick(type.includes('liter') ? gasMaterials : materials, rng)
-      const mol = pick(molValues, rng)
+      const candidates = (type.includes('liter') ? gasMaterials : materials).flatMap((material) => molValues.map((mol) => ({ material, mol, key: `${type}:${material.formula}:${mol}` })))
+        .filter((candidate) => !usedCombinations.has(candidate.key))
+      if (candidates.length === 0) throw new Error(`mol計算道場の出題候補が不足しています: ${type}`)
+      const { material, mol, key } = pick(candidates, rng)
+      usedCombinations.add(key)
       questions.push({ ...build(type, difficulty, material, mol), id: `mol-${type}-${difficulty}-${questions.length}` })
     }
   }
