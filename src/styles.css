@@ -30,6 +30,8 @@ h3 { margin: 28px 0 10px; font-size: 16px; }
 .quantity-menu b { color: #1f5d9a !important; }
 .substance-menu { border-color: #b49ad1 !important; background: #faf5ff !important; }
 .substance-menu b { color: #69438a !important; }
+.functional-menu { border-color: #d8a77a !important; background: #fff8f1 !important; }
+.functional-menu b { color: #97551a !important; }
 .menu-intro { margin: -8px 0 18px; color: #64748b; font-size: 14px; line-height: 1.6; }
 .quantity-mode-menu button:first-child b { color: #1f5d9a; }
 .quantity-mode-menu button:nth-child(2) b { color: #7b4f0b; }
@@ -59,6 +61,8 @@ h3 { margin: 28px 0 10px; font-size: 16px; }
 
 .choices { gap: 11px; }
 .choices.two-choice button { min-height: 88px; }
+.choices.five-choice { gap: 9px; }
+.choices.five-choice button { min-height: 58px; }
 .choices button { display: flex; align-items: flex-start; gap: 12px; min-height: 66px; padding: 15px 14px; text-align: left; font-size: 16px; line-height: 1.55; overflow-wrap: anywhere; }
 .choices strong { display: grid; flex: 0 0 26px; width: 26px; height: 26px; place-items: center; border-radius: 50%; background: #edf3f1; color: #31645a; font-size: 14px; }
 .choices .correct { border-color: #20a574; background: #e7f8ef; color: #075c42; }
@@ -86,6 +90,7 @@ h3 { margin: 28px 0 10px; font-size: 16px; }
   .menu .dojo-menu { grid-column: span 2; }
   .menu .quantity-menu { grid-column: span 2; }
   .menu .substance-menu { grid-column: span 2; }
+  .menu .functional-menu { grid-column: span 2; }
   .actions { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .actions .next { grid-column: span 2; }
 }
