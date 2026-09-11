@@ -1,12 +1,13 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useState, type FormEvent } from 'react'
 import { questions } from './data/questions'
 import { createFlashPointDojoSet, type FlashPointQuestion } from './data/flashPointDojo'
 import { createDesignatedQuantitySet, type QuantityMode, type QuantityQuestion } from './data/designatedQuantityDojo'
 import { createSubstanceClassificationSet, type SubstanceMode, type SubstanceQuestion } from './data/substanceClassificationDojo'
 import { createFunctionalGroupSet, type FunctionalGroupQuestion } from './data/functionalGroupDojo'
+import { createMolCalculationSet, isCorrectMolAnswer, type MolDifficulty, type MolQuestion } from './data/molCalculationDojo'
 import type { Category, History, Question } from './types'
 
-type Screen = 'home' | 'normal-options' | 'category' | 'category-options' | 'quiz' | 'result' | 'flash-options' | 'dojo' | 'dojo-result' | 'quantity-menu' | 'quantity' | 'quantity-result' | 'substance-menu' | 'substance' | 'substance-result' | 'functional-options' | 'functional' | 'functional-result'
+type Screen = 'home' | 'normal-options' | 'category' | 'category-options' | 'quiz' | 'result' | 'flash-options' | 'dojo' | 'dojo-result' | 'quantity-menu' | 'quantity' | 'quantity-result' | 'substance-menu' | 'substance' | 'substance-result' | 'functional-options' | 'functional' | 'functional-result' | 'mol-menu' | 'mol' | 'mol-result'
 type Mode = 'ten' | 'random' | 'mistakes' | 'category'
 type SetSize = 10 | 20 | 30
 type NormalSize = 10 | 20 | 35 | 50 | 'all'
@@ -15,6 +16,7 @@ type DojoAnswer = { question: FlashPointQuestion; selected: number; correct: boo
 type QuantityAnswer = { question: QuantityQuestion; selected: number; correct: boolean }
 type SubstanceAnswer = { question: SubstanceQuestion; selected: number; correct: boolean }
 type FunctionalAnswer = { question: FunctionalGroupQuestion; selected: number; correct: boolean }
+type MolAnswer = { question: MolQuestion; input: string; correct: boolean }
 const historyKey = 'otsu4-quiz-learning-history'
 const explanationSettingKey = 'otsu4-quiz-show-explanation'
 const categories: Category[] = ['法令', '物理化学', '性質消火']
@@ -49,6 +51,12 @@ export default function App() {
   const [functionalIndex, setFunctionalIndex] = useState(0)
   const [functionalSelected, setFunctionalSelected] = useState<number | null>(null)
   const [functionalAnswers, setFunctionalAnswers] = useState<FunctionalAnswer[]>([])
+  const [molQuiz, setMolQuiz] = useState<MolQuestion[]>([])
+  const [molDifficulty, setMolDifficulty] = useState<MolDifficulty>('basic')
+  const [molIndex, setMolIndex] = useState(0)
+  const [molInput, setMolInput] = useState('')
+  const [molAnswered, setMolAnswered] = useState(false)
+  const [molAnswers, setMolAnswers] = useState<MolAnswer[]>([])
   const [setSize, setSetSize] = useState<SetSize>(10)
   const [normalSize, setNormalSize] = useState<NormalSize>(10)
   const [showExplanation, setShowExplanation] = useState(readShowExplanation)
@@ -108,6 +116,14 @@ export default function App() {
     setFunctionalAnswers((previous) => [...previous, { question, selected: choice, correct }])
   }
   const nextFunctional = () => { if (functionalIndex + 1 >= functionalQuiz.length) setScreen('functional-result'); else { setFunctionalIndex(functionalIndex + 1); setFunctionalSelected(null) } }
+  const startMol = (difficulty: MolDifficulty, size: SetSize) => { setMolQuiz(createMolCalculationSet(difficulty, size)); setMolDifficulty(difficulty); setMolIndex(0); setMolInput(''); setMolAnswered(false); setMolAnswers([]); setScreen('mol') }
+  const answerMol = () => {
+    const question = molQuiz[molIndex]
+    if (!question || molAnswered || molInput.trim() === '' || !Number.isFinite(Number(molInput))) return
+    const correct = isCorrectMolAnswer(molInput, question.answerValue)
+    setMolAnswered(true); setMolAnswers((previous) => [...previous, { question, input: molInput, correct }])
+  }
+  const nextMol = () => { if (molIndex + 1 >= molQuiz.length) setScreen('mol-result'); else { setMolIndex(molIndex + 1); setMolInput(''); setMolAnswered(false) } }
   const toggleExplanation = () => setShowExplanation((previous) => {
     const nextValue = !previous
     localStorage.setItem(explanationSettingKey, String(nextValue))
@@ -124,6 +140,7 @@ export default function App() {
       <button className="quantity-menu" onClick={() => setScreen('quantity-menu')}><b>指定数量道場</b><span>指定数量の暗記と倍数計算を特訓</span></button>
       <button className="substance-menu" onClick={() => setScreen('substance-menu')}><b>物質分類道場</b><span>石油類と水溶性を代表物質から判定</span></button>
       <button className="functional-menu" onClick={() => setScreen('functional-options')}><b>官能基道場</b><span>物質名と官能基を5肢択一で反復</span></button>
+      <button className="mol-menu" onClick={() => setScreen('mol-menu')}><b>mol計算道場</b><span>数値入力でmol計算を反復</span></button>
     </div><ExplanationToggle enabled={showExplanation} onToggle={toggleExplanation} /><p className="note">回答履歴はこの端末内に保存されます。</p></section>}
     {screen === 'normal-options' && <NormalTestMenu size={normalSize} onSizeChange={setNormalSize} onBack={() => setScreen('home')} onStart={() => start('random', undefined, normalSize)} />}
     {screen === 'category' && <section><button className="back" onClick={() => setScreen('home')}>← トップへ戻る</button><h2>分野を選ぶ</h2><div className="menu">{categories.map((category) => <button key={category} onClick={() => { setCategoryScope(category); setNormalSize(10); setScreen('category-options') }}><b>{category}</b><span>{questions.filter((q) => q.category === category).length}問から出題</span></button>)}</div></section>}
@@ -142,6 +159,9 @@ export default function App() {
     {screen === 'functional-options' && <SetLengthMenu title="官能基道場" description="物質名と官能基を5肢択一で反復します。" size={setSize} onSizeChange={setSetSize} onBack={() => setScreen('home')} onStart={() => startFunctional(setSize)} />}
     {screen === 'functional' && functionalQuiz[functionalIndex] && <FunctionalQuiz question={functionalQuiz[functionalIndex]} index={functionalIndex} total={functionalQuiz.length} selected={functionalSelected} showExplanation={showExplanation} onToggleExplanation={toggleExplanation} onAnswer={answerFunctional} onNext={nextFunctional} onQuit={() => setScreen('home')} />}
     {screen === 'functional-result' && <FunctionalResults answers={functionalAnswers} onHome={() => setScreen('home')} onRetry={() => startFunctional(functionalQuiz.length as SetSize)} />}
+    {screen === 'mol-menu' && <MolMenu size={setSize} onSizeChange={setSetSize} onBack={() => setScreen('home')} onStart={startMol} />}
+    {screen === 'mol' && molQuiz[molIndex] && <MolQuiz question={molQuiz[molIndex]} index={molIndex} total={molQuiz.length} input={molInput} answered={molAnswered} onInput={setMolInput} onAnswer={answerMol} onNext={nextMol} onQuit={() => setScreen('home')} />}
+    {screen === 'mol-result' && <MolResults answers={molAnswers} onHome={() => setScreen('home')} onRetry={() => startMol(molDifficulty, molQuiz.length as SetSize)} />}
   </main>
 }
 
@@ -233,6 +253,26 @@ function FunctionalQuiz({ question, index, total, selected, showExplanation, onT
   </section>
 }
 
+function MolMenu({ size, onSizeChange, onBack, onStart }: { size: SetSize; onSizeChange: (size: SetSize) => void; onBack: () => void; onStart: (difficulty: MolDifficulty, size: SetSize) => void }) {
+  return <section><button className="back" onClick={onBack}>← トップへ戻る</button><h2>mol計算道場</h2><p className="menu-intro">選択肢を使わず、数値を入力してmol計算を練習します。</p><SetLengthPicker size={size} onSizeChange={onSizeChange} /><div className="menu mol-mode-menu">
+    <button onClick={() => onStart('basic', size)}><b>基礎</b><span>問題文にモル質量を示して計算を練習</span></button>
+    <button onClick={() => onStart('standard', size)}><b>標準</b><span>原子量からモル質量も求める</span></button>
+  </div></section>
+}
+
+function MolQuiz({ question, index, total, input, answered, onInput, onAnswer, onNext, onQuit }: { question: MolQuestion; index: number; total: number; input: string; answered: boolean; onInput: (value: string) => void; onAnswer: () => void; onNext: () => void; onQuit: () => void }) {
+  const correct = isCorrectMolAnswer(input, question.answerValue)
+  const canSubmit = input.trim() !== '' && Number.isFinite(Number(input))
+  const submit = (event: FormEvent) => { event.preventDefault(); if (canSubmit) onAnswer() }
+  return <section className="quiz mol-quiz"><div className="progress"><span>mol計算道場 {index + 1} / {total}</span><span>残り {total - index - 1} 問</span></div><div className="bar"><i style={{ width: `${((index + 1) / total) * 100}%` }} /></div>
+    <div className="meta"><span>{question.difficulty === 'basic' ? '基礎' : '標準'}</span><span>数値入力</span></div><h2 className="question">{question.title}</h2>
+    <details className="mol-hint"><summary>計算のヒント</summary><p>g → mol：モル質量で割る<br />mol → g：モル質量を掛ける<br />mol → L：22.4を掛ける（標準状態）<br />L → mol：22.4で割る（標準状態）</p></details>
+    <form className="mol-answer" onSubmit={submit}><label htmlFor="mol-input">答え</label><div><input id="mol-input" type="text" inputMode="decimal" autoComplete="off" disabled={answered} value={input} onChange={(event) => onInput(event.target.value)} aria-describedby="mol-unit" /><span id="mol-unit">{question.unit}</span></div>{!answered && <button className="next" type="submit" disabled={!canSubmit}>回答を確定</button>}</form>
+    {answered && <div className={`feedback ${correct ? 'yes' : 'no'}`}><b>{correct ? '正解！' : '不正解'}</b><p className="answer-line">正解：{question.answer}</p><p className="calculation-explanation">{question.explanation}</p><button className="next" onClick={onNext}>{index + 1 === total ? '結果を見る' : '次へ'}</button></div>}
+    {!answered && <button className="quit" onClick={onQuit}>道場を中止してトップへ</button>}
+  </section>
+}
+
 function Results({ answers, mode, onHome, onRetry, onMistakes }: { answers: Answer[]; mode: Mode; onHome: () => void; onRetry: () => void; onMistakes: () => void }) {
   const score = answers.filter((a) => a.correct).length
   const stats = useMemo(() => categories.map((category) => { const list = answers.filter((a) => a.question.category === category); return { category, total: list.length, correct: list.filter((a) => a.correct).length } }), [answers])
@@ -279,4 +319,13 @@ function FunctionalResults({ answers, onHome, onRetry }: { answers: FunctionalAn
   return <section className="result functional-result"><div className={`score ${perfect ? 'perfect' : ''}`}><p>官能基道場 結果</p><h2>{perfect ? `${score} / ${answers.length} 全問正解` : <>{score}<small> / {answers.length} 問正解</small></>}</h2><b>正答率 {answers.length ? Math.round((score / answers.length) * 100) : 0}%</b></div>
     {incorrect.length > 0 && <><h3>間違えた問題</h3><div className="wrong">{incorrect.map((answer) => <article key={answer.question.id}><span>官能基</span><p>{answer.question.title}</p><small>正解：{answer.question.answer}</small></article>)}</div></>}
     <div className="actions"><button className="next" onClick={onRetry}>もう一度 道場に挑戦</button><button className="back" onClick={onHome}>トップへ戻る</button></div></section>
+}
+
+function MolResults({ answers, onHome, onRetry }: { answers: MolAnswer[]; onHome: () => void; onRetry: () => void }) {
+  const score = answers.filter((answer) => answer.correct).length
+  const incorrect = answers.filter((answer) => !answer.correct)
+  const perfect = answers.length > 0 && score === answers.length
+  return <section className="result mol-result"><div className={`score ${perfect ? 'perfect' : ''}`}><p>mol計算道場 結果</p><h2>{perfect ? `${score} / ${answers.length} 全問正解` : <>{score}<small> / {answers.length} 問正解</small></>}</h2><b>正答率 {answers.length ? Math.round((score / answers.length) * 100) : 0}%</b></div>
+    {incorrect.length > 0 && <><h3>間違えた問題</h3><div className="wrong">{incorrect.map((answer) => <article key={`${answer.question.id}-${answer.input}`}><span>{answer.question.unit}を答える問題</span><p>{answer.question.title}</p><small>入力：{answer.input} / 正解：{answer.question.answer}</small></article>)}</div></>}
+    <div className="actions"><button className="next" onClick={onRetry}>同じ難易度でもう一度</button><button className="back" onClick={onHome}>トップへ戻る</button></div></section>
 }
