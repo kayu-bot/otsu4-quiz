@@ -242,7 +242,7 @@ function SubstanceResults({ answers, onHome, onRetry }: { answers: SubstanceAnsw
   const combinedMistakes = incorrect.filter((answer) => answer.question.mistakeType === '総合').length
   const perfect = score === 10
   return <section className="result substance-result"><div className={`score ${perfect ? 'perfect' : ''}`}><p>物質分類道場 結果</p><h2>{perfect ? '10 / 10 全問正解' : <>{score}<small> / 10 問正解</small></>}</h2><b>正答率 {answers.length ? Math.round((score / answers.length) * 100) : 0}%</b></div>
-    {incorrect.length > 0 && <><h3>間違えた物質</h3><div className="wrong">{incorrect.map((answer) => <article key={answer.question.id}><span>{answer.question.substance.name}・{answer.question.mistakeType}を間違えた</span><p>{answer.question.title}</p><small>正解：{answer.question.answer}</small></article>)}</div><p className="mistake-summary">石油類を間違えた：{petroleumMistakes}問　水溶性を間違えた：{solubilityMistakes}問　総合判定を間違えた：{combinedMistakes}問</p></>}
+    {incorrect.length > 0 && <><h3>間違えた物質</h3><div className="wrong">{incorrect.map((answer) => <article key={answer.question.id}><span>{answer.question.substance.name}・{answer.question.mistakeType}を間違えた</span><p>{answer.question.title}</p><small>正解：{answer.question.answer}</small></article>)}</div><p className="mistake-summary">石油類を間違えた：{petroleumMistakes}問 {' '}水溶性を間違えた：{solubilityMistakes}問 {' '}総合判定を間違えた：{combinedMistakes}問</p></>}
     <div className="actions"><button className="next" onClick={onRetry}>同じモードでもう一度</button><button className="back" onClick={onHome}>トップへ戻る</button></div></section>
 }
 
