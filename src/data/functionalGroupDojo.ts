@@ -44,9 +44,13 @@ function groupToSubstance(item: FunctionalGroup) {
   return withChoices(`group-${item.group}`, `${item.group}をもつ物質はどれ？`, item.substance, `${item.group}（${item.symbol}）をもつのは${item.substance}です。`, functionalGroups.map((candidate) => candidate.substance))
 }
 
-function correctCombination(item: FunctionalGroup, wrong: FunctionalGroup) {
+function correctCombination(item: FunctionalGroup) {
   const answer = `${item.substance}：${item.group}`
-  const choices = [answer, `${wrong.substance}：${item.group}`, `${item.substance}：${wrong.group}`, ...functionalGroups.filter((candidate) => candidate !== item && candidate !== wrong).slice(0, 2).map((candidate) => `${candidate.substance}：${candidate.group}`)]
+  const wrongChoices = functionalGroups.filter((candidate) => candidate !== item).map((candidate) => {
+    const wrongGroup = shuffle(functionalGroups.filter((group) => group.group !== candidate.group))[0].group
+    return `${candidate.substance}：${wrongGroup}`
+  })
+  const choices = [answer, ...wrongChoices]
   return withChoices(`correct-combination-${item.substance}`, '次の組み合わせで正しいものはどれ？', answer, `${item.substance} ${item.formula} の ${item.symbol.replace('－', '')} が${item.group}です。`, choices)
 }
 
@@ -66,13 +70,39 @@ export function createFunctionalGroupSet(): FunctionalGroupQuestion[] {
     substanceToGroup(items[0], false),
     substanceToGroup(items[1], true),
     groupToSubstance(items[2]),
-    correctCombination(items[3], items[4]),
+    correctCombination(items[3]),
     incorrectCombination(items[4], items[0]),
     symbolToGroup(items[1]),
     groupToSubstance(items[0]),
     substanceToGroup(items[2], true),
-    correctCombination(items[1], items[3]),
+    correctCombination(items[1]),
     incorrectCombination(items[3], items[2]),
   ]
   return shuffle(questions)
+}
+
+const pairIsCorrect = (choice: string) => {
+  const [substance, group] = choice.split('：')
+  return functionalGroups.some((item) => item.substance === substance && item.group === group)
+}
+
+// 既知の対応表から意味上の正解を再計算し、生成ロジックの不整合を検出します。
+export function validateFunctionalGroupQuestion(question: FunctionalGroupQuestion): boolean {
+  let semanticAnswers: string[]
+  if (question.id.startsWith('correct-combination-')) semanticAnswers = question.choices.filter(pairIsCorrect)
+  else if (question.id.startsWith('incorrect-combination-')) semanticAnswers = question.choices.filter((choice) => !pairIsCorrect(choice))
+  else if (question.id.startsWith('group-')) {
+    const item = functionalGroups.find((candidate) => question.id === `group-${candidate.group}`)
+    semanticAnswers = item ? question.choices.filter((choice) => choice === item.substance) : []
+  } else if (question.id.startsWith('symbol-')) {
+    const item = functionalGroups.find((candidate) => question.id === `symbol-${candidate.symbol}`)
+    semanticAnswers = item ? question.choices.filter((choice) => choice === item.group) : []
+  } else {
+    const item = functionalGroups.find((candidate) => question.id.startsWith(`substance-${candidate.substance}-`))
+    semanticAnswers = item ? question.choices.filter((choice) => choice === item.group) : []
+  }
+  return semanticAnswers.length === 1
+    && semanticAnswers[0] === question.answer
+    && question.choices[question.correctIndex] === question.answer
+    && new Set(question.choices).size === question.choices.length
 }
