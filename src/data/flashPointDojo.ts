@@ -29,13 +29,10 @@ export function classifyFlashPoint(temperature: number): Pick<FlashPointQuestion
 }
 
 export function createFlashPointDojoSet(size = 10): FlashPointQuestion[] {
-  const uniqueTemperatures = [...new Set(weightedTemperatures)]
   const selected: number[] = []
-  const available = [...weightedTemperatures]
-  while (selected.length < Math.min(size, uniqueTemperatures.length) && available.length > 0) {
-    const index = Math.floor(Math.random() * available.length)
-    const [temperature] = available.splice(index, 1)
-    if (!selected.includes(temperature)) selected.push(temperature)
+  while (selected.length < size) {
+    const temperature = weightedTemperatures[Math.floor(Math.random() * weightedTemperatures.length)]
+    if (selected[selected.length - 1] !== temperature) selected.push(temperature)
   }
   return selected.map((temperature) => {
     const { answer, range } = classifyFlashPoint(temperature)

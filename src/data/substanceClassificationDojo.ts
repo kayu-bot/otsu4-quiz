@@ -50,12 +50,13 @@ const className = (substance: Substance) => `第${substance.petroleumClass}石�
 const solubilityName = (substance: Substance) => substance.solubility === 'water' ? '水溶性' : '非水溶性'
 const classificationName = (substance: Substance) => `${className(substance)}・${solubilityName(substance)}`
 
-function weightedSubstances(): Substance[] {
+function weightedSubstances(size: number): Substance[] {
   const weighted = substances.flatMap((substance) => substance.tags.includes('重点') ? [substance, substance] : [substance])
   const selected: Substance[] = []
-  while (selected.length < 10) {
+  while (selected.length < size) {
     const candidate = weighted[Math.floor(Math.random() * weighted.length)]
-    if (!selected.some((substance) => substance.name === candidate.name)) selected.push(candidate)
+    const hasUnused = selected.length < substances.length
+    if (selected[selected.length - 1]?.name !== candidate.name && (!hasUnused || !selected.some((substance) => substance.name === candidate.name))) selected.push(candidate)
   }
   return selected
 }
@@ -78,9 +79,8 @@ function combinedQuestion(substance: Substance): SubstanceQuestion {
   return { id: `combined-${substance.name}`, substance, title: `${substance.name}の分類として正しいものは？`, choices, correctIndex: choices.indexOf(answer), answer, explanation: `${substance.name}は${answer}です。\n指定数量は${substance.designatedQuantity}Lです。`, mistakeType: '総合' }
 }
 
-export function createSubstanceClassificationSet(mode: SubstanceMode): SubstanceQuestion[] {
-  const selected = weightedSubstances()
-  if (mode === 'petroleum') return selected.map(petroleumQuestion)
-  if (mode === 'solubility') return selected.map(solubilityQuestion)
-  return selected.map(combinedQuestion)
+export function createSubstanceClassificationSet(mode: SubstanceMode, size = 10): SubstanceQuestion[] {
+  const selected = weightedSubstances(size)
+  const makeQuestion = mode === 'petroleum' ? petroleumQuestion : mode === 'solubility' ? solubilityQuestion : combinedQuestion
+  return selected.map((substance, index) => ({ ...makeQuestion(substance), id: `${mode}-${index}-${substance.name}` }))
 }

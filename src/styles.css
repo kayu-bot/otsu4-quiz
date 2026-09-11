@@ -33,6 +33,7 @@ h3 { margin: 28px 0 10px; font-size: 16px; }
 .functional-menu { border-color: #d8a77a !important; background: #fff8f1 !important; }
 .functional-menu b { color: #97551a !important; }
 .menu-intro { margin: -8px 0 18px; color: #64748b; font-size: 14px; line-height: 1.6; }
+.set-length-picker { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 0 0 18px; padding: 10px 12px; border: 1px solid #dce4e1; border-radius: 12px; background: #fff; color: #40534f; font-size: 14px; font-weight: 700; }.set-length-picker > div { display: flex; gap: 6px; }.set-length-picker button { min-height: 36px; padding: 6px 10px; border: 1px solid #b9ccc6; border-radius: 9px; background: #fff; color: #40534f; font-size: 14px; font-weight: 700; }.set-length-picker button.selected { border-color: #08775f; background: #08775f; color: #fff; }.start-dojo { margin-top: 4px; }
 .quantity-mode-menu button:first-child b { color: #1f5d9a; }
 .quantity-mode-menu button:nth-child(2) b { color: #7b4f0b; }
 .quantity-mode-menu button:nth-child(3) b { color: #6d3b84; }

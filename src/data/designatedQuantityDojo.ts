@@ -82,11 +82,20 @@ export function createDesignatedCalculationQuestion(templateIndex: number, rng: 
   return { id: `calculation-template-${templateIndex}`, title, choices, correctIndex: choices.indexOf(answer), answer, explanation, wrongLabel: entries.map((entry) => entry.material.name).join('・') }
 }
 
-export function createDesignatedQuantitySet(mode: QuantityMode, rng: RandomSource = Math.random): QuantityQuestion[] {
-  if (mode === 'memory') return shuffle(designatedQuantityItems, rng).map((item) => memoryQuestion(item, false, rng))
-  if (mode === 'calculation') return Array.from({ length: 10 }, (_, index) => createDesignatedCalculationQuestion(index, rng))
-  const memoryItems = shuffle(designatedQuantityItems.filter((item) => item.material), rng).slice(0, 3)
-  const memory = memoryItems.map((item) => memoryQuestion(item, true, rng))
-  const calculations = [0, 1, 2, 3, 4, 5, 6].map((index) => createDesignatedCalculationQuestion(index, rng))
-  return shuffle([...memory, ...calculations], rng)
+export function createDesignatedQuantitySet(mode: QuantityMode, size = 10, rng: RandomSource = Math.random): QuantityQuestion[] {
+  if (mode === 'memory') {
+    const questions: QuantityQuestion[] = []
+    while (questions.length < size) {
+      for (const item of shuffle(designatedQuantityItems, rng)) if (questions.length < size) questions.push({ ...memoryQuestion(item, false, rng), id: `memory-${questions.length}-${item.id}` })
+    }
+    return questions
+  }
+  if (mode === 'calculation') return Array.from({ length: size }, (_, index) => ({ ...createDesignatedCalculationQuestion(index % 10, rng), id: `calculation-template-${index % 10}-${index}` }))
+  const questions: QuantityQuestion[] = []
+  while (questions.length < size) {
+    const memoryItems = shuffle(designatedQuantityItems.filter((item) => item.material), rng).slice(0, 3).map((item) => memoryQuestion(item, true, rng))
+    const calculations = [0, 1, 2, 3, 4, 5, 6].map((index) => createDesignatedCalculationQuestion(index, rng))
+    for (const question of shuffle([...memoryItems, ...calculations], rng)) if (questions.length < size) questions.push({ ...question, id: `${question.id}-${questions.length}` })
+  }
+  return questions
 }

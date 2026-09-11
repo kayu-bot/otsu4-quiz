@@ -6,8 +6,9 @@ import { createSubstanceClassificationSet, type SubstanceMode, type SubstanceQue
 import { createFunctionalGroupSet, type FunctionalGroupQuestion } from './data/functionalGroupDojo'
 import type { Category, History, Question } from './types'
 
-type Screen = 'home' | 'category' | 'quiz' | 'result' | 'dojo' | 'dojo-result' | 'quantity-menu' | 'quantity' | 'quantity-result' | 'substance-menu' | 'substance' | 'substance-result' | 'functional' | 'functional-result'
+type Screen = 'home' | 'category' | 'quiz' | 'result' | 'flash-options' | 'dojo' | 'dojo-result' | 'quantity-menu' | 'quantity' | 'quantity-result' | 'substance-menu' | 'substance' | 'substance-result' | 'functional-options' | 'functional' | 'functional-result'
 type Mode = 'ten' | 'random' | 'mistakes' | 'category'
+type SetSize = 10 | 20 | 30
 type Answer = { question: Question; selected: number; correct: boolean }
 type DojoAnswer = { question: FlashPointQuestion; selected: number; correct: boolean }
 type QuantityAnswer = { question: QuantityQuestion; selected: number; correct: boolean }
@@ -47,6 +48,7 @@ export default function App() {
   const [functionalIndex, setFunctionalIndex] = useState(0)
   const [functionalSelected, setFunctionalSelected] = useState<number | null>(null)
   const [functionalAnswers, setFunctionalAnswers] = useState<FunctionalAnswer[]>([])
+  const [setSize, setSetSize] = useState<SetSize>(10)
   const [showExplanation, setShowExplanation] = useState(readShowExplanation)
 
   const current = quiz[index]
@@ -68,7 +70,7 @@ export default function App() {
     setHistory(updated); localStorage.setItem(historyKey, JSON.stringify(updated))
   }
   const next = () => { if (index + 1 >= quiz.length) setScreen('result'); else { setIndex(index + 1); setSelected(null) } }
-  const startDojo = () => { setDojoQuiz(createFlashPointDojoSet()); setDojoIndex(0); setDojoSelected(null); setDojoAnswers([]); setScreen('dojo') }
+  const startDojo = (size: SetSize) => { setDojoQuiz(createFlashPointDojoSet(size)); setDojoIndex(0); setDojoSelected(null); setDojoAnswers([]); setScreen('dojo') }
   const answerDojo = (choice: number) => {
     const question = dojoQuiz[dojoIndex]
     if (dojoSelected !== null || !question) return
@@ -77,7 +79,7 @@ export default function App() {
     setDojoAnswers((previous) => [...previous, { question, selected: choice, correct }])
   }
   const nextDojo = () => { if (dojoIndex + 1 >= dojoQuiz.length) setScreen('dojo-result'); else { setDojoIndex(dojoIndex + 1); setDojoSelected(null) } }
-  const startQuantity = (nextMode: QuantityMode) => { setQuantityQuiz(createDesignatedQuantitySet(nextMode)); setQuantityMode(nextMode); setQuantityIndex(0); setQuantitySelected(null); setQuantityAnswers([]); setScreen('quantity') }
+  const startQuantity = (nextMode: QuantityMode, size: SetSize) => { setQuantityQuiz(createDesignatedQuantitySet(nextMode, size)); setQuantityMode(nextMode); setQuantityIndex(0); setQuantitySelected(null); setQuantityAnswers([]); setScreen('quantity') }
   const answerQuantity = (choice: number) => {
     const question = quantityQuiz[quantityIndex]
     if (quantitySelected !== null || !question) return
@@ -86,7 +88,7 @@ export default function App() {
     setQuantityAnswers((previous) => [...previous, { question, selected: choice, correct }])
   }
   const nextQuantity = () => { if (quantityIndex + 1 >= quantityQuiz.length) setScreen('quantity-result'); else { setQuantityIndex(quantityIndex + 1); setQuantitySelected(null) } }
-  const startSubstance = (nextMode: SubstanceMode) => { setSubstanceQuiz(createSubstanceClassificationSet(nextMode)); setSubstanceMode(nextMode); setSubstanceIndex(0); setSubstanceSelected(null); setSubstanceAnswers([]); setScreen('substance') }
+  const startSubstance = (nextMode: SubstanceMode, size: SetSize) => { setSubstanceQuiz(createSubstanceClassificationSet(nextMode, size)); setSubstanceMode(nextMode); setSubstanceIndex(0); setSubstanceSelected(null); setSubstanceAnswers([]); setScreen('substance') }
   const answerSubstance = (choice: number) => {
     const question = substanceQuiz[substanceIndex]
     if (substanceSelected !== null || !question) return
@@ -95,7 +97,7 @@ export default function App() {
     setSubstanceAnswers((previous) => [...previous, { question, selected: choice, correct }])
   }
   const nextSubstance = () => { if (substanceIndex + 1 >= substanceQuiz.length) setScreen('substance-result'); else { setSubstanceIndex(substanceIndex + 1); setSubstanceSelected(null) } }
-  const startFunctional = () => { setFunctionalQuiz(createFunctionalGroupSet()); setFunctionalIndex(0); setFunctionalSelected(null); setFunctionalAnswers([]); setScreen('functional') }
+  const startFunctional = (size: SetSize) => { setFunctionalQuiz(createFunctionalGroupSet(size)); setFunctionalIndex(0); setFunctionalSelected(null); setFunctionalAnswers([]); setScreen('functional') }
   const answerFunctional = (choice: number) => {
     const question = functionalQuiz[functionalIndex]
     if (functionalSelected !== null || !question) return
@@ -116,29 +118,39 @@ export default function App() {
       <button onClick={() => setScreen('category')}><b>分野別</b><span>苦手な分野を重点復習</span></button>
       <button onClick={() => start('mistakes')}><b>間違えた問題</b><span>不正解だった問題を優先</span></button>
       <button onClick={() => start('random')}><b>全問題からランダム</b><span>全{questions.length}問をランダム出題</span></button>
-      <button className="dojo-menu" onClick={startDojo}><b>引火点道場</b><span>石油類の区分を10問で特訓</span></button>
+      <button className="dojo-menu" onClick={() => setScreen('flash-options')}><b>引火点道場</b><span>石油類の区分を反復特訓</span></button>
       <button className="quantity-menu" onClick={() => setScreen('quantity-menu')}><b>指定数量道場</b><span>指定数量の暗記と倍数計算を特訓</span></button>
       <button className="substance-menu" onClick={() => setScreen('substance-menu')}><b>物質分類道場</b><span>石油類と水溶性を代表物質から判定</span></button>
-      <button className="functional-menu" onClick={startFunctional}><b>官能基道場</b><span>物質名と官能基を5肢択一で反復</span></button>
+      <button className="functional-menu" onClick={() => setScreen('functional-options')}><b>官能基道場</b><span>物質名と官能基を5肢択一で反復</span></button>
     </div><ExplanationToggle enabled={showExplanation} onToggle={toggleExplanation} /><p className="note">回答履歴はこの端末内に保存されます。</p></section>}
     {screen === 'category' && <section><button className="back" onClick={() => setScreen('home')}>← トップへ戻る</button><h2>分野を選ぶ</h2><div className="menu">{categories.map((category) => <button key={category} onClick={() => start('category', category)}><b>{category}</b><span>{questions.filter((q) => q.category === category).length}問からランダム出題</span></button>)}</div></section>}
     {screen === 'quiz' && current && <Quiz question={current} index={index} total={quiz.length} selected={selected} showExplanation={showExplanation} onToggleExplanation={toggleExplanation} onAnswer={answer} onNext={next} onQuit={() => setScreen('home')} />}
     {screen === 'result' && <Results answers={answers} mode={mode} onHome={() => setScreen('home')} onRetry={() => start(mode, categoryScope)} onMistakes={() => start('mistakes')} />}
     {screen === 'dojo' && dojoQuiz[dojoIndex] && <DojoQuiz question={dojoQuiz[dojoIndex]} index={dojoIndex} total={dojoQuiz.length} selected={dojoSelected} showExplanation={showExplanation} onToggleExplanation={toggleExplanation} onAnswer={answerDojo} onNext={nextDojo} onQuit={() => setScreen('home')} />}
-    {screen === 'dojo-result' && <DojoResults answers={dojoAnswers} onHome={() => setScreen('home')} onRetry={startDojo} />}
-    {screen === 'quantity-menu' && <QuantityMenu onBack={() => setScreen('home')} onStart={startQuantity} />}
+    {screen === 'flash-options' && <SetLengthMenu title="引火点道場" description="石油類の引火点区分を反復します。" size={setSize} onSizeChange={setSetSize} onBack={() => setScreen('home')} onStart={() => startDojo(setSize)} />}
+    {screen === 'dojo-result' && <DojoResults answers={dojoAnswers} onHome={() => setScreen('home')} onRetry={() => startDojo(dojoQuiz.length as SetSize)} />}
+    {screen === 'quantity-menu' && <QuantityMenu size={setSize} onSizeChange={setSetSize} onBack={() => setScreen('home')} onStart={startQuantity} />}
     {screen === 'quantity' && quantityQuiz[quantityIndex] && <QuantityQuiz question={quantityQuiz[quantityIndex]} index={quantityIndex} total={quantityQuiz.length} selected={quantitySelected} showExplanation={showExplanation} onToggleExplanation={toggleExplanation} onAnswer={answerQuantity} onNext={nextQuantity} onQuit={() => setScreen('home')} />}
-    {screen === 'quantity-result' && <QuantityResults answers={quantityAnswers} onHome={() => setScreen('home')} onRetry={() => startQuantity(quantityMode)} />}
-    {screen === 'substance-menu' && <SubstanceMenu onBack={() => setScreen('home')} onStart={startSubstance} />}
+    {screen === 'quantity-result' && <QuantityResults answers={quantityAnswers} onHome={() => setScreen('home')} onRetry={() => startQuantity(quantityMode, quantityQuiz.length as SetSize)} />}
+    {screen === 'substance-menu' && <SubstanceMenu size={setSize} onSizeChange={setSetSize} onBack={() => setScreen('home')} onStart={startSubstance} />}
     {screen === 'substance' && substanceQuiz[substanceIndex] && <SubstanceQuiz question={substanceQuiz[substanceIndex]} index={substanceIndex} total={substanceQuiz.length} selected={substanceSelected} showExplanation={showExplanation} onToggleExplanation={toggleExplanation} onAnswer={answerSubstance} onNext={nextSubstance} onQuit={() => setScreen('home')} />}
-    {screen === 'substance-result' && <SubstanceResults answers={substanceAnswers} onHome={() => setScreen('home')} onRetry={() => startSubstance(substanceMode)} />}
+    {screen === 'substance-result' && <SubstanceResults answers={substanceAnswers} onHome={() => setScreen('home')} onRetry={() => startSubstance(substanceMode, substanceQuiz.length as SetSize)} />}
+    {screen === 'functional-options' && <SetLengthMenu title="官能基道場" description="物質名と官能基を5肢択一で反復します。" size={setSize} onSizeChange={setSetSize} onBack={() => setScreen('home')} onStart={() => startFunctional(setSize)} />}
     {screen === 'functional' && functionalQuiz[functionalIndex] && <FunctionalQuiz question={functionalQuiz[functionalIndex]} index={functionalIndex} total={functionalQuiz.length} selected={functionalSelected} showExplanation={showExplanation} onToggleExplanation={toggleExplanation} onAnswer={answerFunctional} onNext={nextFunctional} onQuit={() => setScreen('home')} />}
-    {screen === 'functional-result' && <FunctionalResults answers={functionalAnswers} onHome={() => setScreen('home')} onRetry={startFunctional} />}
+    {screen === 'functional-result' && <FunctionalResults answers={functionalAnswers} onHome={() => setScreen('home')} onRetry={() => startFunctional(functionalQuiz.length as SetSize)} />}
   </main>
 }
 
 function ExplanationToggle({ enabled, onToggle }: { enabled: boolean; onToggle: () => void }) {
   return <button className="explanation-toggle" type="button" role="switch" aria-checked={enabled} onClick={onToggle}><span>解説を表示</span><i className={enabled ? 'on' : ''}><b /></i><em>{enabled ? 'ON' : 'OFF'}</em></button>
+}
+
+function SetLengthPicker({ size, onSizeChange }: { size: SetSize; onSizeChange: (size: SetSize) => void }) {
+  return <div className="set-length-picker"><span>問題数</span><div>{([10, 20, 30] as SetSize[]).map((value) => <button key={value} className={size === value ? 'selected' : ''} onClick={() => onSizeChange(value)}>{value}問</button>)}</div></div>
+}
+
+function SetLengthMenu({ title, description, size, onSizeChange, onBack, onStart }: { title: string; description: string; size: SetSize; onSizeChange: (size: SetSize) => void; onBack: () => void; onStart: () => void }) {
+  return <section><button className="back" onClick={onBack}>← トップへ戻る</button><h2>{title}</h2><p className="menu-intro">{description}</p><SetLengthPicker size={size} onSizeChange={onSizeChange} /><button className="next start-dojo" onClick={onStart}>{size}問で始める</button></section>
 }
 
 function Quiz({ question, index, total, selected, showExplanation, onToggleExplanation, onAnswer, onNext, onQuit }: { question: Question; index: number; total: number; selected: number | null; showExplanation: boolean; onToggleExplanation: () => void; onAnswer: (n: number) => void; onNext: () => void; onQuit: () => void }) {
@@ -161,11 +173,11 @@ function DojoQuiz({ question, index, total, selected, showExplanation, onToggleE
   </section>
 }
 
-function QuantityMenu({ onBack, onStart }: { onBack: () => void; onStart: (mode: QuantityMode) => void }) {
-  return <section><button className="back" onClick={onBack}>← トップへ戻る</button><h2>指定数量道場</h2><p className="menu-intro">指定数量を答えに表示せず、暗記と倍数計算を繰り返します。</p><div className="menu quantity-mode-menu">
-    <button onClick={() => onStart('memory')}><b>指定数量暗記</b><span>区分や物質から指定数量を答える</span></button>
-    <button onClick={() => onStart('calculation')}><b>倍数計算</b><span>指定数量を思い出して倍数を計算する</span></button>
-    <button onClick={() => onStart('mix')}><b>ミックス</b><span>暗記と単一・複数の倍数計算を実戦形式で</span></button>
+function QuantityMenu({ size, onSizeChange, onBack, onStart }: { size: SetSize; onSizeChange: (size: SetSize) => void; onBack: () => void; onStart: (mode: QuantityMode, size: SetSize) => void }) {
+  return <section><button className="back" onClick={onBack}>← トップへ戻る</button><h2>指定数量道場</h2><p className="menu-intro">指定数量を答えに表示せず、暗記と倍数計算を繰り返します。</p><SetLengthPicker size={size} onSizeChange={onSizeChange} /><div className="menu quantity-mode-menu">
+    <button onClick={() => onStart('memory', size)}><b>指定数量暗記</b><span>区分や物質から指定数量を答える</span></button>
+    <button onClick={() => onStart('calculation', size)}><b>倍数計算</b><span>指定数量を思い出して倍数を計算する</span></button>
+    <button onClick={() => onStart('mix', size)}><b>ミックス</b><span>暗記と単一・複数の倍数計算を実戦形式で</span></button>
   </div></section>
 }
 
@@ -179,11 +191,11 @@ function QuantityQuiz({ question, index, total, selected, showExplanation, onTog
   </section>
 }
 
-function SubstanceMenu({ onBack, onStart }: { onBack: () => void; onStart: (mode: SubstanceMode) => void }) {
-  return <section><button className="back" onClick={onBack}>← トップへ戻る</button><h2>物質分類道場</h2><p className="menu-intro">代表物質から、石油類と水溶性を反射的に判定します。</p><div className="menu substance-mode-menu">
-    <button onClick={() => onStart('petroleum')}><b>石油類判定</b><span>第1〜第3石油類を答える</span></button>
-    <button onClick={() => onStart('solubility')}><b>水溶性判定</b><span>水溶性か非水溶性かを2択で答える</span></button>
-    <button onClick={() => onStart('combined')}><b>総合判定</b><span>石油類と水溶性を同時に答える</span></button>
+function SubstanceMenu({ size, onSizeChange, onBack, onStart }: { size: SetSize; onSizeChange: (size: SetSize) => void; onBack: () => void; onStart: (mode: SubstanceMode, size: SetSize) => void }) {
+  return <section><button className="back" onClick={onBack}>← トップへ戻る</button><h2>物質分類道場</h2><p className="menu-intro">代表物質から、石油類と水溶性を反射的に判定します。</p><SetLengthPicker size={size} onSizeChange={onSizeChange} /><div className="menu substance-mode-menu">
+    <button onClick={() => onStart('petroleum', size)}><b>石油類判定</b><span>第1〜第3石油類を答える</span></button>
+    <button onClick={() => onStart('solubility', size)}><b>水溶性判定</b><span>水溶性か非水溶性かを2択で答える</span></button>
+    <button onClick={() => onStart('combined', size)}><b>総合判定</b><span>石油類と水溶性を同時に答える</span></button>
   </div></section>
 }
 
@@ -219,8 +231,8 @@ function Results({ answers, mode, onHome, onRetry, onMistakes }: { answers: Answ
 function DojoResults({ answers, onHome, onRetry }: { answers: DojoAnswer[]; onHome: () => void; onRetry: () => void }) {
   const score = answers.filter((answer) => answer.correct).length
   const incorrect = answers.filter((answer) => !answer.correct)
-  const perfect = score === 10
-  return <section className="result dojo-result"><div className={`score ${perfect ? 'perfect' : ''}`}><p>引火点道場 結果</p><h2>{perfect ? '10 / 10 全問正解' : <>{score}<small> / 10 問正解</small></>}</h2><b>正答率 {answers.length ? Math.round((score / answers.length) * 100) : 0}%</b></div>
+  const perfect = answers.length > 0 && score === answers.length
+  return <section className="result dojo-result"><div className={`score ${perfect ? 'perfect' : ''}`}><p>引火点道場 結果</p><h2>{perfect ? `${score} / ${answers.length} 全問正解` : <>{score}<small> / {answers.length} 問正解</small></>}</h2><b>正答率 {answers.length ? Math.round((score / answers.length) * 100) : 0}%</b></div>
     {incorrect.length > 0 && <><h3>間違えた温度</h3><div className="wrong">{incorrect.map((answer) => <article key={answer.question.temperature}><span>引火点 {answer.question.temperature}℃</span><p>正解：{answer.question.answer}</p><small>{answer.question.range}</small></article>)}</div></>}
     <div className="actions"><button className="next" onClick={onRetry}>もう一度 道場に挑戦</button><button className="back" onClick={onHome}>トップへ戻る</button></div></section>
 }
@@ -228,8 +240,8 @@ function DojoResults({ answers, onHome, onRetry }: { answers: DojoAnswer[]; onHo
 function QuantityResults({ answers, onHome, onRetry }: { answers: QuantityAnswer[]; onHome: () => void; onRetry: () => void }) {
   const score = answers.filter((answer) => answer.correct).length
   const incorrect = answers.filter((answer) => !answer.correct)
-  const perfect = score === 10
-  return <section className="result quantity-result"><div className={`score ${perfect ? 'perfect' : ''}`}><p>指定数量道場 結果</p><h2>{perfect ? '10 / 10 全問正解' : <>{score}<small> / 10 問正解</small></>}</h2><b>正答率 {answers.length ? Math.round((score / answers.length) * 100) : 0}%</b></div>
+  const perfect = answers.length > 0 && score === answers.length
+  return <section className="result quantity-result"><div className={`score ${perfect ? 'perfect' : ''}`}><p>指定数量道場 結果</p><h2>{perfect ? `${score} / ${answers.length} 全問正解` : <>{score}<small> / {answers.length} 問正解</small></>}</h2><b>正答率 {answers.length ? Math.round((score / answers.length) * 100) : 0}%</b></div>
     {incorrect.length > 0 && <><h3>間違えた問題</h3><div className="wrong">{incorrect.map((answer) => <article key={answer.question.id}><span>{answer.question.wrongLabel}</span><p>{answer.question.title}</p><small>正解：{answer.question.answer}</small></article>)}</div></>}
     <div className="actions"><button className="next" onClick={onRetry}>同じモードでもう一度</button><button className="back" onClick={onHome}>トップへ戻る</button></div></section>
 }
@@ -240,8 +252,8 @@ function SubstanceResults({ answers, onHome, onRetry }: { answers: SubstanceAnsw
   const petroleumMistakes = incorrect.filter((answer) => answer.question.mistakeType === '石油類').length
   const solubilityMistakes = incorrect.filter((answer) => answer.question.mistakeType === '水溶性').length
   const combinedMistakes = incorrect.filter((answer) => answer.question.mistakeType === '総合').length
-  const perfect = score === 10
-  return <section className="result substance-result"><div className={`score ${perfect ? 'perfect' : ''}`}><p>物質分類道場 結果</p><h2>{perfect ? '10 / 10 全問正解' : <>{score}<small> / 10 問正解</small></>}</h2><b>正答率 {answers.length ? Math.round((score / answers.length) * 100) : 0}%</b></div>
+  const perfect = answers.length > 0 && score === answers.length
+  return <section className="result substance-result"><div className={`score ${perfect ? 'perfect' : ''}`}><p>物質分類道場 結果</p><h2>{perfect ? `${score} / ${answers.length} 全問正解` : <>{score}<small> / {answers.length} 問正解</small></>}</h2><b>正答率 {answers.length ? Math.round((score / answers.length) * 100) : 0}%</b></div>
     {incorrect.length > 0 && <><h3>間違えた物質</h3><div className="wrong">{incorrect.map((answer) => <article key={answer.question.id}><span>{answer.question.substance.name}・{answer.question.mistakeType}を間違えた</span><p>{answer.question.title}</p><small>正解：{answer.question.answer}</small></article>)}</div><p className="mistake-summary">石油類を間違えた：{petroleumMistakes}問 {' '}水溶性を間違えた：{solubilityMistakes}問 {' '}総合判定を間違えた：{combinedMistakes}問</p></>}
     <div className="actions"><button className="next" onClick={onRetry}>同じモードでもう一度</button><button className="back" onClick={onHome}>トップへ戻る</button></div></section>
 }
@@ -249,8 +261,8 @@ function SubstanceResults({ answers, onHome, onRetry }: { answers: SubstanceAnsw
 function FunctionalResults({ answers, onHome, onRetry }: { answers: FunctionalAnswer[]; onHome: () => void; onRetry: () => void }) {
   const score = answers.filter((answer) => answer.correct).length
   const incorrect = answers.filter((answer) => !answer.correct)
-  const perfect = score === 10
-  return <section className="result functional-result"><div className={`score ${perfect ? 'perfect' : ''}`}><p>官能基道場 結果</p><h2>{perfect ? '10 / 10 全問正解' : <>{score}<small> / 10 問正解</small></>}</h2><b>正答率 {answers.length ? Math.round((score / answers.length) * 100) : 0}%</b></div>
+  const perfect = answers.length > 0 && score === answers.length
+  return <section className="result functional-result"><div className={`score ${perfect ? 'perfect' : ''}`}><p>官能基道場 結果</p><h2>{perfect ? `${score} / ${answers.length} 全問正解` : <>{score}<small> / {answers.length} 問正解</small></>}</h2><b>正答率 {answers.length ? Math.round((score / answers.length) * 100) : 0}%</b></div>
     {incorrect.length > 0 && <><h3>間違えた問題</h3><div className="wrong">{incorrect.map((answer) => <article key={answer.question.id}><span>官能基</span><p>{answer.question.title}</p><small>正解：{answer.question.answer}</small></article>)}</div></>}
     <div className="actions"><button className="next" onClick={onRetry}>もう一度 道場に挑戦</button><button className="back" onClick={onHome}>トップへ戻る</button></div></section>
 }

@@ -44,6 +44,10 @@ function groupToSubstance(item: FunctionalGroup) {
   return withChoices(`group-${item.group}`, `${item.group}をもつ物質はどれ？`, item.substance, `${item.group}（${item.symbol}）をもつのは${item.substance}です。`, functionalGroups.map((candidate) => candidate.substance))
 }
 
+function groupToSymbol(item: FunctionalGroup) {
+  return withChoices(`group-symbol-${item.group}`, `${item.group}を表す式はどれ？`, item.symbol, `${item.group}は${item.symbol}で表します。`, functionalGroups.map((candidate) => candidate.symbol))
+}
+
 function correctCombination(item: FunctionalGroup) {
   const answer = `${item.substance}：${item.group}`
   const wrongChoices = functionalGroups.filter((candidate) => candidate !== item).map((candidate) => {
@@ -64,21 +68,33 @@ function symbolToGroup(item: FunctionalGroup) {
   return withChoices(`symbol-${item.symbol}`, `${item.symbol} は何基か。`, item.group, `${item.symbol} は${item.group}を表します。`, groupChoices())
 }
 
-export function createFunctionalGroupSet(): FunctionalGroupQuestion[] {
+function createFunctionalGroupCycle(): FunctionalGroupQuestion[] {
   const items = shuffle(functionalGroups)
-  const questions = [
+  return [
     substanceToGroup(items[0], false),
     substanceToGroup(items[1], true),
     groupToSubstance(items[2]),
     correctCombination(items[3]),
     incorrectCombination(items[4], items[0]),
     symbolToGroup(items[1]),
-    groupToSubstance(items[0]),
+    groupToSymbol(items[4]),
     substanceToGroup(items[2], true),
     correctCombination(items[1]),
     incorrectCombination(items[3], items[2]),
   ]
-  return shuffle(questions)
+}
+
+export function createFunctionalGroupSet(size = 10): FunctionalGroupQuestion[] {
+  const questions: FunctionalGroupQuestion[] = []
+  while (questions.length < size) {
+    const cycle = shuffle(createFunctionalGroupCycle())
+    for (const question of cycle) {
+    const previous = questions[questions.length - 1]
+      const sameConfiguration = previous?.title === question.title && previous.choices.join('|') === question.choices.join('|')
+      if (!sameConfiguration && questions.length < size) questions.push({ ...question, id: `${question.id}-${questions.length}` })
+    }
+  }
+  return questions
 }
 
 const pairIsCorrect = (choice: string) => {
@@ -91,11 +107,14 @@ export function validateFunctionalGroupQuestion(question: FunctionalGroupQuestio
   let semanticAnswers: string[]
   if (question.id.startsWith('correct-combination-')) semanticAnswers = question.choices.filter(pairIsCorrect)
   else if (question.id.startsWith('incorrect-combination-')) semanticAnswers = question.choices.filter((choice) => !pairIsCorrect(choice))
-  else if (question.id.startsWith('group-')) {
-    const item = functionalGroups.find((candidate) => question.id === `group-${candidate.group}`)
+  else if (question.id.startsWith('group-symbol-')) {
+    const item = functionalGroups.find((candidate) => question.id.startsWith(`group-symbol-${candidate.group}`))
+    semanticAnswers = item ? question.choices.filter((choice) => choice === item.symbol) : []
+  } else if (question.id.startsWith('group-')) {
+    const item = functionalGroups.find((candidate) => question.id.startsWith(`group-${candidate.group}`))
     semanticAnswers = item ? question.choices.filter((choice) => choice === item.substance) : []
   } else if (question.id.startsWith('symbol-')) {
-    const item = functionalGroups.find((candidate) => question.id === `symbol-${candidate.symbol}`)
+    const item = functionalGroups.find((candidate) => question.id.startsWith(`symbol-${candidate.symbol}`))
     semanticAnswers = item ? question.choices.filter((choice) => choice === item.group) : []
   } else {
     const item = functionalGroups.find((candidate) => question.id.startsWith(`substance-${candidate.substance}-`))
