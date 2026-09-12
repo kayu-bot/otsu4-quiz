@@ -144,6 +144,9 @@ export default function App() {
     localStorage.setItem(explanationSettingKey, String(nextValue))
     return nextValue
   })
+  const confirmExit = (label: string) => {
+    if (window.confirm(`${label}を終了しますか？\n現在までの回答は結果画面に表示されません。`)) setScreen('home')
+  }
 
   return <main className="app"><header><span className="badge">乙4</span><div><h1>危険物取扱者 クイズ</h1><p>短時間で、確実に復習。</p></div></header>
     {screen === 'home' && <section className="home"><h2>今日の学習を選ぶ</h2><div className="menu">
@@ -151,35 +154,36 @@ export default function App() {
       <button onClick={() => setScreen('category')}><b>分野別</b><span>苦手な分野を重点復習</span></button>
       <button onClick={() => start('mistakes', undefined, normalSize)}><b>間違えた問題</b><span>不正解だった問題を優先</span></button>
       <button onClick={() => start('random', undefined, 'all')}><b>全問題からランダム</b><span>全{questions.length}問をランダム出題</span></button>
+    </div><details className="dojo-dropdown"><summary><b>道場を開く</b><span>分野ごとの反復練習</span></summary><div className="menu dojo-list">
       <button className="dojo-menu" onClick={() => setScreen('flash-options')}><b>引火点道場</b><span>石油類の区分を反復特訓</span></button>
       <button className="quantity-menu" onClick={() => setScreen('quantity-menu')}><b>指定数量道場</b><span>指定数量の暗記と倍数計算を特訓</span></button>
       <button className="substance-menu" onClick={() => setScreen('substance-menu')}><b>物質分類道場</b><span>石油類と水溶性を代表物質から判定</span></button>
       <button className="functional-menu" onClick={() => setScreen('functional-options')}><b>官能基道場</b><span>物質名と官能基を5肢択一で反復</span></button>
       <button className="mol-menu" onClick={() => setScreen('mol-menu')}><b>mol計算道場</b><span>数値入力でmol計算を反復</span></button>
       <button className="combustion-menu" onClick={() => setScreen('combustion-options')}><b>完全燃焼式道場</b><span>C→CO₂、H→H₂O、最後にOを合わせる。完全燃焼式を反復練習。</span></button>
-    </div><ExplanationToggle enabled={showExplanation} onToggle={toggleExplanation} /><p className="note">回答履歴はこの端末内に保存されます。</p></section>}
+    </div></details><ExplanationToggle enabled={showExplanation} onToggle={toggleExplanation} /><p className="note">回答履歴はこの端末内に保存されます。</p></section>}
     {screen === 'normal-options' && <NormalTestMenu size={normalSize} onSizeChange={setNormalSize} onBack={() => setScreen('home')} onStart={() => start('random', undefined, normalSize)} />}
     {screen === 'category' && <section><button className="back" onClick={() => setScreen('home')}>← トップへ戻る</button><h2>分野を選ぶ</h2><div className="menu">{categories.map((category) => <button key={category} onClick={() => { setCategoryScope(category); setNormalSize(10); setScreen('category-options') }}><b>{category}</b><span>{questions.filter((q) => q.category === category).length}問から出題</span></button>)}</div></section>}
     {screen === 'category-options' && categoryScope && <CategoryTestMenu category={categoryScope} available={questions.filter((q) => q.category === categoryScope).length} size={normalSize === 35 || normalSize === 50 ? 10 : normalSize} onSizeChange={setNormalSize} onBack={() => setScreen('category')} onStart={() => start('category', categoryScope, normalSize)} />}
-    {screen === 'quiz' && current && <Quiz question={current} index={index} total={quiz.length} selected={selected} showExplanation={showExplanation} onToggleExplanation={toggleExplanation} onAnswer={answer} onNext={next} onQuit={() => setScreen('home')} />}
+    {screen === 'quiz' && current && <Quiz question={current} index={index} total={quiz.length} selected={selected} showExplanation={showExplanation} onToggleExplanation={toggleExplanation} onAnswer={answer} onNext={next} onQuit={() => confirmExit('このクイズ')} />}
     {screen === 'result' && <Results answers={answers} mode={mode} onHome={() => setScreen('home')} onRetry={() => start(mode, categoryScope, quiz.length as NormalSize)} onMistakes={() => start('mistakes', undefined, normalSize)} />}
-    {screen === 'dojo' && dojoQuiz[dojoIndex] && <DojoQuiz question={dojoQuiz[dojoIndex]} index={dojoIndex} total={dojoQuiz.length} selected={dojoSelected} showExplanation={showExplanation} onToggleExplanation={toggleExplanation} onAnswer={answerDojo} onNext={nextDojo} onQuit={() => setScreen('home')} />}
+    {screen === 'dojo' && dojoQuiz[dojoIndex] && <DojoQuiz question={dojoQuiz[dojoIndex]} index={dojoIndex} total={dojoQuiz.length} selected={dojoSelected} showExplanation={showExplanation} onToggleExplanation={toggleExplanation} onAnswer={answerDojo} onNext={nextDojo} onQuit={() => confirmExit('この道場')} />}
     {screen === 'flash-options' && <SetLengthMenu title="引火点道場" description="石油類の引火点区分を反復します。" size={setSize} onSizeChange={setSetSize} onBack={() => setScreen('home')} onStart={() => startDojo(setSize)} />}
     {screen === 'dojo-result' && <DojoResults answers={dojoAnswers} onHome={() => setScreen('home')} onRetry={() => startDojo(dojoQuiz.length as SetSize)} />}
     {screen === 'quantity-menu' && <QuantityMenu size={setSize} onSizeChange={setSetSize} onBack={() => setScreen('home')} onStart={startQuantity} />}
-    {screen === 'quantity' && quantityQuiz[quantityIndex] && <QuantityQuiz question={quantityQuiz[quantityIndex]} index={quantityIndex} total={quantityQuiz.length} selected={quantitySelected} showExplanation={showExplanation} onToggleExplanation={toggleExplanation} onAnswer={answerQuantity} onNext={nextQuantity} onQuit={() => setScreen('home')} />}
+    {screen === 'quantity' && quantityQuiz[quantityIndex] && <QuantityQuiz question={quantityQuiz[quantityIndex]} index={quantityIndex} total={quantityQuiz.length} selected={quantitySelected} showExplanation={showExplanation} onToggleExplanation={toggleExplanation} onAnswer={answerQuantity} onNext={nextQuantity} onQuit={() => confirmExit('この道場')} />}
     {screen === 'quantity-result' && <QuantityResults answers={quantityAnswers} onHome={() => setScreen('home')} onRetry={() => startQuantity(quantityMode, quantityQuiz.length as SetSize)} />}
     {screen === 'substance-menu' && <SubstanceMenu size={setSize} onSizeChange={setSetSize} onBack={() => setScreen('home')} onStart={startSubstance} />}
-    {screen === 'substance' && substanceQuiz[substanceIndex] && <SubstanceQuiz question={substanceQuiz[substanceIndex]} index={substanceIndex} total={substanceQuiz.length} selected={substanceSelected} showExplanation={showExplanation} onToggleExplanation={toggleExplanation} onAnswer={answerSubstance} onNext={nextSubstance} onQuit={() => setScreen('home')} />}
+    {screen === 'substance' && substanceQuiz[substanceIndex] && <SubstanceQuiz question={substanceQuiz[substanceIndex]} index={substanceIndex} total={substanceQuiz.length} selected={substanceSelected} showExplanation={showExplanation} onToggleExplanation={toggleExplanation} onAnswer={answerSubstance} onNext={nextSubstance} onQuit={() => confirmExit('この道場')} />}
     {screen === 'substance-result' && <SubstanceResults answers={substanceAnswers} onHome={() => setScreen('home')} onRetry={() => startSubstance(substanceMode, substanceQuiz.length as SetSize)} />}
     {screen === 'functional-options' && <SetLengthMenu title="官能基道場" description="物質名と官能基を5肢択一で反復します。" size={setSize} onSizeChange={setSetSize} onBack={() => setScreen('home')} onStart={() => startFunctional(setSize)} />}
-    {screen === 'functional' && functionalQuiz[functionalIndex] && <FunctionalQuiz question={functionalQuiz[functionalIndex]} index={functionalIndex} total={functionalQuiz.length} selected={functionalSelected} showExplanation={showExplanation} onToggleExplanation={toggleExplanation} onAnswer={answerFunctional} onNext={nextFunctional} onQuit={() => setScreen('home')} />}
+    {screen === 'functional' && functionalQuiz[functionalIndex] && <FunctionalQuiz question={functionalQuiz[functionalIndex]} index={functionalIndex} total={functionalQuiz.length} selected={functionalSelected} showExplanation={showExplanation} onToggleExplanation={toggleExplanation} onAnswer={answerFunctional} onNext={nextFunctional} onQuit={() => confirmExit('この道場')} />}
     {screen === 'functional-result' && <FunctionalResults answers={functionalAnswers} onHome={() => setScreen('home')} onRetry={() => startFunctional(functionalQuiz.length as SetSize)} />}
     {screen === 'mol-menu' && <MolMenu size={setSize} onSizeChange={setSetSize} onBack={() => setScreen('home')} onStart={startMol} />}
-    {screen === 'mol' && molQuiz[molIndex] && <MolQuiz question={molQuiz[molIndex]} index={molIndex} total={molQuiz.length} input={molInput} answered={molAnswered} onInput={setMolInput} onAnswer={answerMol} onNext={nextMol} onQuit={() => setScreen('home')} />}
+    {screen === 'mol' && molQuiz[molIndex] && <MolQuiz question={molQuiz[molIndex]} index={molIndex} total={molQuiz.length} input={molInput} answered={molAnswered} onInput={setMolInput} onAnswer={answerMol} onNext={nextMol} onQuit={() => confirmExit('この道場')} />}
     {screen === 'mol-result' && <MolResults answers={molAnswers} onHome={() => setScreen('home')} onRetry={() => startMol(molDifficulty, molQuiz.length as SetSize)} />}
     {screen === 'combustion-options' && <SetLengthMenu title="完全燃焼式道場" description="4つの係数を入力して、完全燃焼反応式を完成させます。" size={setSize} onSizeChange={setSetSize} onBack={() => setScreen('home')} onStart={() => startCombustion(setSize)} />}
-    {screen === 'combustion' && combustionQuiz[combustionIndex] && <CombustionQuiz question={combustionQuiz[combustionIndex]} index={combustionIndex} total={combustionQuiz.length} inputs={combustionInputs} answered={combustionAnswered} onInputsChange={setCombustionInputs} onAnswer={answerCombustion} onNext={nextCombustion} onQuit={() => setScreen('home')} />}
+    {screen === 'combustion' && combustionQuiz[combustionIndex] && <CombustionQuiz question={combustionQuiz[combustionIndex]} index={combustionIndex} total={combustionQuiz.length} inputs={combustionInputs} answered={combustionAnswered} onInputsChange={setCombustionInputs} onAnswer={answerCombustion} onNext={nextCombustion} onQuit={() => confirmExit('この道場')} />}
     {screen === 'combustion-result' && <CombustionResults answers={combustionAnswers} onHome={() => setScreen('home')} onRetry={() => startCombustion(combustionQuiz.length as SetSize)} />}
   </main>
 }
