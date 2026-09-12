@@ -34,6 +34,8 @@ h3 { margin: 28px 0 10px; font-size: 16px; }
 .functional-menu b { color: #97551a !important; }
 .mol-menu { border-color: #79b9b2 !important; background: #f1fbfa !important; }
 .mol-menu b { color: #16756d !important; }
+.combustion-menu { border-color: #e39a67 !important; background: #fff5ee !important; }
+.combustion-menu b { color: #a44d19 !important; }
 .menu-intro { margin: -8px 0 18px; color: #64748b; font-size: 14px; line-height: 1.6; }
 .set-length-picker { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 0 0 18px; padding: 10px 12px; border: 1px solid #dce4e1; border-radius: 12px; background: #fff; color: #40534f; font-size: 14px; font-weight: 700; }.set-length-picker > div { display: flex; gap: 6px; }.set-length-picker button { min-height: 36px; padding: 6px 10px; border: 1px solid #b9ccc6; border-radius: 9px; background: #fff; color: #40534f; font-size: 14px; font-weight: 700; }.set-length-picker button.selected { border-color: #08775f; background: #08775f; color: #fff; }.start-dojo { margin-top: 4px; }
 .quantity-mode-menu button:first-child b { color: #1f5d9a; }
@@ -83,6 +85,8 @@ h3 { margin: 28px 0 10px; font-size: 16px; }
 .mol-hint { margin: 16px 0; border: 1px solid #c8ded9; border-radius: 12px; background: #f7fcfb; color: #40534f; font-size: 14px; line-height: 1.7; }
 .mol-hint summary { padding: 11px 13px; cursor: pointer; font-weight: 800; }.mol-hint p { margin: 0; padding: 0 13px 12px; }
 .mol-answer { display: grid; gap: 10px; margin-top: 18px; }.mol-answer label { color: #40534f; font-size: 14px; font-weight: 800; }.mol-answer > div { display: flex; align-items: center; gap: 10px; }.mol-answer input { width: 100%; min-width: 0; min-height: 56px; padding: 10px 14px; border: 2px solid #8dbdb6; border-radius: 12px; background: #fff; color: #173f3a; font: inherit; font-size: 20px; font-weight: 700; }.mol-answer input:focus { outline: 3px solid #b9e4dd; border-color: #08775f; }.mol-answer span { min-width: 38px; color: #16756d; font-size: 18px; font-weight: 800; }.mol-answer button:disabled { cursor: not-allowed; opacity: .5; }
+.combustion-hint { margin: 16px 0; border: 1px solid #f0c8ae; border-radius: 12px; background: #fffaf6; color: #6e4228; font-size: 14px; line-height: 1.7; }.combustion-hint summary { padding: 11px 13px; cursor: pointer; font-weight: 800; }.combustion-hint ol { margin: 0; padding: 0 18px 12px 34px; }
+.combustion-form { margin-top: 18px; }.equation-inputs { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 8px; padding: 14px 8px; border: 1px solid #f0d5c3; border-radius: 14px; background: #fff; color: #693616; font-size: 18px; }.coefficient-input { display: flex; align-items: center; gap: 4px; min-width: 0; font-weight: 800; }.coefficient-input input { width: 46px; min-width: 0; height: 46px; padding: 5px; border: 2px solid #d99b6f; border-radius: 10px; color: #693616; font: inherit; font-size: 18px; font-weight: 800; text-align: center; }.coefficient-input input:focus { outline: 3px solid #f8d5bb; border-color: #b7652d; }.equation-inputs > b { color: #ad5b24; }.combustion-form .next { margin-top: 14px; }.combustion-form .next:disabled { cursor: not-allowed; opacity: .5; }
 .next { display: block; width: 100%; min-height: 52px; padding: 12px 16px; border: 0; border-radius: 12px; background: #08775f; color: white; font-weight: 800; text-align: center !important; }
 
 .score { padding: 22px 16px; border-radius: 16px; background: #e6f5ef; color: #075c42; text-align: center; overflow-wrap: anywhere; }
@@ -100,6 +104,7 @@ h3 { margin: 28px 0 10px; font-size: 16px; }
   .menu .substance-menu { grid-column: span 2; }
   .menu .functional-menu { grid-column: span 2; }
   .menu .mol-menu { grid-column: span 2; }
+  .menu .combustion-menu { grid-column: span 2; }
   .actions { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .actions .next { grid-column: span 2; }
 }

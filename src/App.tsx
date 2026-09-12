@@ -5,9 +5,10 @@ import { createDesignatedQuantitySet, type QuantityMode, type QuantityQuestion }
 import { createSubstanceClassificationSet, type SubstanceMode, type SubstanceQuestion } from './data/substanceClassificationDojo'
 import { createFunctionalGroupSet, type FunctionalGroupQuestion } from './data/functionalGroupDojo'
 import { createMolCalculationSet, isCorrectMolAnswer, type MolDifficulty, type MolQuestion } from './data/molCalculationDojo'
+import { createCombustionSet, isCorrectCombustionAnswer, type CombustionQuestion } from './data/combustionEquationDojo'
 import type { Category, History, Question } from './types'
 
-type Screen = 'home' | 'normal-options' | 'category' | 'category-options' | 'quiz' | 'result' | 'flash-options' | 'dojo' | 'dojo-result' | 'quantity-menu' | 'quantity' | 'quantity-result' | 'substance-menu' | 'substance' | 'substance-result' | 'functional-options' | 'functional' | 'functional-result' | 'mol-menu' | 'mol' | 'mol-result'
+type Screen = 'home' | 'normal-options' | 'category' | 'category-options' | 'quiz' | 'result' | 'flash-options' | 'dojo' | 'dojo-result' | 'quantity-menu' | 'quantity' | 'quantity-result' | 'substance-menu' | 'substance' | 'substance-result' | 'functional-options' | 'functional' | 'functional-result' | 'mol-menu' | 'mol' | 'mol-result' | 'combustion-options' | 'combustion' | 'combustion-result'
 type Mode = 'ten' | 'random' | 'mistakes' | 'category'
 type SetSize = 10 | 20 | 30
 type NormalSize = 10 | 20 | 35 | 50 | 'all'
@@ -17,6 +18,7 @@ type QuantityAnswer = { question: QuantityQuestion; selected: number; correct: b
 type SubstanceAnswer = { question: SubstanceQuestion; selected: number; correct: boolean }
 type FunctionalAnswer = { question: FunctionalGroupQuestion; selected: number; correct: boolean }
 type MolAnswer = { question: MolQuestion; input: string; correct: boolean }
+type CombustionAnswer = { question: CombustionQuestion; inputs: string[]; correct: boolean }
 const historyKey = 'otsu4-quiz-learning-history'
 const explanationSettingKey = 'otsu4-quiz-show-explanation'
 const categories: Category[] = ['法令', '物理化学', '性質消火']
@@ -57,6 +59,11 @@ export default function App() {
   const [molInput, setMolInput] = useState('')
   const [molAnswered, setMolAnswered] = useState(false)
   const [molAnswers, setMolAnswers] = useState<MolAnswer[]>([])
+  const [combustionQuiz, setCombustionQuiz] = useState<CombustionQuestion[]>([])
+  const [combustionIndex, setCombustionIndex] = useState(0)
+  const [combustionInputs, setCombustionInputs] = useState(['', '', '', ''])
+  const [combustionAnswered, setCombustionAnswered] = useState(false)
+  const [combustionAnswers, setCombustionAnswers] = useState<CombustionAnswer[]>([])
   const [setSize, setSetSize] = useState<SetSize>(10)
   const [normalSize, setNormalSize] = useState<NormalSize>(10)
   const [showExplanation, setShowExplanation] = useState(readShowExplanation)
@@ -124,6 +131,14 @@ export default function App() {
     setMolAnswered(true); setMolAnswers((previous) => [...previous, { question, input: molInput, correct }])
   }
   const nextMol = () => { if (molIndex + 1 >= molQuiz.length) setScreen('mol-result'); else { setMolIndex(molIndex + 1); setMolInput(''); setMolAnswered(false) } }
+  const startCombustion = (size: SetSize) => { setCombustionQuiz(createCombustionSet(size)); setCombustionIndex(0); setCombustionInputs(['', '', '', '']); setCombustionAnswered(false); setCombustionAnswers([]); setScreen('combustion') }
+  const answerCombustion = () => {
+    const question = combustionQuiz[combustionIndex]
+    if (!question || combustionAnswered || combustionInputs.some((input) => !/^\d+$/.test(input) || Number(input) <= 0)) return
+    const correct = isCorrectCombustionAnswer(combustionInputs, question.coefficients)
+    setCombustionAnswered(true); setCombustionAnswers((previous) => [...previous, { question, inputs: combustionInputs, correct }])
+  }
+  const nextCombustion = () => { if (combustionIndex + 1 >= combustionQuiz.length) setScreen('combustion-result'); else { setCombustionIndex(combustionIndex + 1); setCombustionInputs(['', '', '', '']); setCombustionAnswered(false) } }
   const toggleExplanation = () => setShowExplanation((previous) => {
     const nextValue = !previous
     localStorage.setItem(explanationSettingKey, String(nextValue))
@@ -141,6 +156,7 @@ export default function App() {
       <button className="substance-menu" onClick={() => setScreen('substance-menu')}><b>物質分類道場</b><span>石油類と水溶性を代表物質から判定</span></button>
       <button className="functional-menu" onClick={() => setScreen('functional-options')}><b>官能基道場</b><span>物質名と官能基を5肢択一で反復</span></button>
       <button className="mol-menu" onClick={() => setScreen('mol-menu')}><b>mol計算道場</b><span>数値入力でmol計算を反復</span></button>
+      <button className="combustion-menu" onClick={() => setScreen('combustion-options')}><b>完全燃焼式道場</b><span>C→CO₂、H→H₂O、最後にOを合わせる。完全燃焼式を反復練習。</span></button>
     </div><ExplanationToggle enabled={showExplanation} onToggle={toggleExplanation} /><p className="note">回答履歴はこの端末内に保存されます。</p></section>}
     {screen === 'normal-options' && <NormalTestMenu size={normalSize} onSizeChange={setNormalSize} onBack={() => setScreen('home')} onStart={() => start('random', undefined, normalSize)} />}
     {screen === 'category' && <section><button className="back" onClick={() => setScreen('home')}>← トップへ戻る</button><h2>分野を選ぶ</h2><div className="menu">{categories.map((category) => <button key={category} onClick={() => { setCategoryScope(category); setNormalSize(10); setScreen('category-options') }}><b>{category}</b><span>{questions.filter((q) => q.category === category).length}問から出題</span></button>)}</div></section>}
@@ -162,6 +178,9 @@ export default function App() {
     {screen === 'mol-menu' && <MolMenu size={setSize} onSizeChange={setSetSize} onBack={() => setScreen('home')} onStart={startMol} />}
     {screen === 'mol' && molQuiz[molIndex] && <MolQuiz question={molQuiz[molIndex]} index={molIndex} total={molQuiz.length} input={molInput} answered={molAnswered} onInput={setMolInput} onAnswer={answerMol} onNext={nextMol} onQuit={() => setScreen('home')} />}
     {screen === 'mol-result' && <MolResults answers={molAnswers} onHome={() => setScreen('home')} onRetry={() => startMol(molDifficulty, molQuiz.length as SetSize)} />}
+    {screen === 'combustion-options' && <SetLengthMenu title="完全燃焼式道場" description="4つの係数を入力して、完全燃焼反応式を完成させます。" size={setSize} onSizeChange={setSetSize} onBack={() => setScreen('home')} onStart={() => startCombustion(setSize)} />}
+    {screen === 'combustion' && combustionQuiz[combustionIndex] && <CombustionQuiz question={combustionQuiz[combustionIndex]} index={combustionIndex} total={combustionQuiz.length} inputs={combustionInputs} answered={combustionAnswered} onInputsChange={setCombustionInputs} onAnswer={answerCombustion} onNext={nextCombustion} onQuit={() => setScreen('home')} />}
+    {screen === 'combustion-result' && <CombustionResults answers={combustionAnswers} onHome={() => setScreen('home')} onRetry={() => startCombustion(combustionQuiz.length as SetSize)} />}
   </main>
 }
 
@@ -273,6 +292,21 @@ function MolQuiz({ question, index, total, input, answered, onInput, onAnswer, o
   </section>
 }
 
+function CombustionQuiz({ question, index, total, inputs, answered, onInputsChange, onAnswer, onNext, onQuit }: { question: CombustionQuestion; index: number; total: number; inputs: string[]; answered: boolean; onInputsChange: (inputs: string[]) => void; onAnswer: () => void; onNext: () => void; onQuit: () => void }) {
+  const correct = isCorrectCombustionAnswer(inputs, question.coefficients)
+  const ready = inputs.length === 4 && inputs.every((input) => /^\d+$/.test(input) && Number(input) > 0)
+  const updateInput = (position: number, value: string) => onInputsChange(inputs.map((input, index) => index === position ? value : input))
+  const submit = (event: FormEvent) => { event.preventDefault(); if (ready) onAnswer() }
+  const coefficient = (position: number, formula: string) => <label className="coefficient-input"><input aria-label={`${formula}の係数`} type="number" min="1" step="1" inputMode="numeric" disabled={answered} value={inputs[position] ?? ''} onChange={(event) => updateInput(position, event.target.value)} /> <span>{formula}</span></label>
+  return <section className="quiz combustion-quiz"><div className="progress"><span>完全燃焼式道場 {index + 1} / {total}</span><span>残り {total - index - 1} 問</span></div><div className="bar"><i style={{ width: `${((index + 1) / total) * 100}%` }} /></div>
+    <div className="meta"><span>完全燃焼</span><span>{question.fuel.name}</span><span>最小整数比</span></div><h2 className="question">{question.fuel.name} {question.fuel.formula} の完全燃焼式を完成させてください。</h2>
+    <details className="combustion-hint"><summary>段階的なヒント</summary><ol><li>まずCの数を見て、CO₂の係数を決めます。</li><li>次にHの数を見て、H₂Oの係数を決めます。</li><li>最後に左右のO原子の数が同じになるようO₂を調整します。</li><li>係数は最小の整数比にします。</li></ol></details>
+    <form className="combustion-form" onSubmit={submit}><div className="equation-inputs">{coefficient(0, question.fuel.formula)}<b>+</b>{coefficient(1, 'O₂')}<b>→</b>{coefficient(2, 'CO₂')}<b>+</b>{coefficient(3, 'H₂O')}</div>{!answered && <button className="next" type="submit" disabled={!ready}>回答する</button>}</form>
+    {answered && <div className={`feedback ${correct ? 'yes' : 'no'}`}><b>{correct ? '正解！' : '不正解'}</b><p className="answer-line">正解：{question.equation}</p><p className="calculation-explanation">{question.explanation}</p><button className="next" onClick={onNext}>{index + 1 === total ? '結果を見る' : '次へ'}</button></div>}
+    {!answered && <button className="quit" onClick={onQuit}>道場を中止してトップへ</button>}
+  </section>
+}
+
 function Results({ answers, mode, onHome, onRetry, onMistakes }: { answers: Answer[]; mode: Mode; onHome: () => void; onRetry: () => void; onMistakes: () => void }) {
   const score = answers.filter((a) => a.correct).length
   const stats = useMemo(() => categories.map((category) => { const list = answers.filter((a) => a.question.category === category); return { category, total: list.length, correct: list.filter((a) => a.correct).length } }), [answers])
@@ -328,4 +362,13 @@ function MolResults({ answers, onHome, onRetry }: { answers: MolAnswer[]; onHome
   return <section className="result mol-result"><div className={`score ${perfect ? 'perfect' : ''}`}><p>mol計算道場 結果</p><h2>{perfect ? `${score} / ${answers.length} 全問正解` : <>{score}<small> / {answers.length} 問正解</small></>}</h2><b>正答率 {answers.length ? Math.round((score / answers.length) * 100) : 0}%</b></div>
     {incorrect.length > 0 && <><h3>間違えた問題</h3><div className="wrong">{incorrect.map((answer) => <article key={`${answer.question.id}-${answer.input}`}><span>{answer.question.unit}を答える問題</span><p>{answer.question.title}</p><small>入力：{answer.input} / 正解：{answer.question.answer}</small></article>)}</div></>}
     <div className="actions"><button className="next" onClick={onRetry}>同じ難易度でもう一度</button><button className="back" onClick={onHome}>トップへ戻る</button></div></section>
+}
+
+function CombustionResults({ answers, onHome, onRetry }: { answers: CombustionAnswer[]; onHome: () => void; onRetry: () => void }) {
+  const score = answers.filter((answer) => answer.correct).length
+  const incorrect = answers.filter((answer) => !answer.correct)
+  const perfect = answers.length > 0 && score === answers.length
+  return <section className="result combustion-result"><div className={`score ${perfect ? 'perfect' : ''}`}><p>完全燃焼式道場 結果</p><h2>{perfect ? `${score} / ${answers.length} 全問正解` : <>{score}<small> / {answers.length} 問正解</small></>}</h2><b>正答率 {answers.length ? Math.round((score / answers.length) * 100) : 0}%</b></div>
+    {incorrect.length > 0 && <><h3>間違えた問題</h3><div className="wrong">{incorrect.map((answer) => <article key={answer.question.id}><span>{answer.question.fuel.name}</span><p>{answer.question.fuel.formula} の完全燃焼式</p><small>正解：{answer.question.equation}</small></article>)}</div></>}
+    <div className="actions"><button className="next" onClick={onRetry}>もう一度 道場に挑戦</button><button className="back" onClick={onHome}>トップへ戻る</button></div></section>
 }
